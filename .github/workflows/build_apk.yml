@@ -25,31 +25,23 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
 
-      - name: Regenerate and Patch Android SDK to 35
+      - name: Buat Ulang Android Bersih
         run: |
           rm -rf test/
           rm -rf android/
           flutter create . --platforms=android --org com.menmafx.calendar --project-name kalender_forex
           flutter pub get
-          # Paksa compileSdk & targetSdk ke versi 35 agar plugin modern tidak error
-          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle
-          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/g' android/app/build.gradle
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 35/g' android/app/build.gradle 2>/dev/null || true
+          sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/g' android/app/build.gradle 2>/dev/null || true
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle 2>/dev/null || true
           sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle 2>/dev/null || true
-          # Konfigurasikan nama aplikasi FX Impact & copy logo launcher
-          sed -i 's/android:label=".*"/android:label="FX Impact"/g' android/app/src/main/AndroidManifest.xml
-          mkdir -p android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
-          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          sed -i 's/android:label=".*"/android:label="FX Impact"/g' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
 
       - name: Build APK Release
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fx-impact-release-apk
+          name: FX-Impact-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
