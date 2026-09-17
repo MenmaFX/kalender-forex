@@ -18,8 +18,37 @@ class CalendarScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final calendar = Provider.of<CalendarProvider>(context);
-    final settings = Provider.of<AppSettingsProvider>(context);
+    // Null safety & defensive provider lookup
+    CalendarProvider? calendar;
+    AppSettingsProvider? settings;
+
+    try {
+      calendar = Provider.of<CalendarProvider>(context);
+      settings = Provider.of<AppSettingsProvider>(context);
+    } catch (e) {
+      debugPrint('Error accessing providers in CalendarScreen: $e');
+    }
+
+    // Jika provider belum siap atau data null, tampilkan indikator loading aman bukan grey screen
+    if (calendar == null || settings == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF121418),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              CircularProgressIndicator(color: AppTheme.myfxOrange),
+              SizedBox(height: 16),
+              Text(
+                'Menyiapkan Kalender...',
+                style: TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final isDark = settings.isDarkMode;
     final hasCustomBg = settings.hasCustomBackground;
     final lang = settings.language;
