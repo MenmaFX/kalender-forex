@@ -299,7 +299,6 @@ class EventCardWidget extends StatelessWidget {
         textColor = const Color(0xFFBDBDBD);
         break;
       case SignalType.none:
-      default:
         bgColor = const Color(0x22FFA500);
         borderColor = const Color(0x66FFA500);
         textColor = AppTheme.myfxOrange;

@@ -80,6 +80,8 @@ class NotificationService {
         signalBody =
             'Aktual USD (${event.actual}) < Ramalan (${event.forecast})! Dolar melemah. Emas & Kripto berpeluang melonjak naik.';
         break;
+      case SignalRecommendation.buyCurrency:
+      case SignalRecommendation.sellCurrency:
       case SignalRecommendation.neutral:
         signalTitle = '⚖️ Data USD Sesuai Ekspektasi';
         signalBody =

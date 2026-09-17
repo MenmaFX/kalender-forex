@@ -52,9 +52,9 @@ class CustomBackgroundScaffold extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // 1. Layer Background Image (Orientation Responsive Portrait/Landscape)
-              if (hasValidImageFile) ...[
+              if (hasValidImageFile && activeImagePath != null) ...[
                 Image.file(
-                  File(activeImagePath!),
+                  File(activeImagePath),
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,

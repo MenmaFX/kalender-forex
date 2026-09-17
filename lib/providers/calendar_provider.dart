@@ -159,10 +159,6 @@ class CalendarProvider with ChangeNotifier {
   }
 
   String get formattedActiveDateHeader {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final target = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
-
     if (_selectedTab == QuickDateTab.thisWeek) {
       return 'Minggu Ini (This Week)';
     } else if (_selectedTab == QuickDateTab.nextWeek) {
