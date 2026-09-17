@@ -28,36 +28,11 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Regenerate Clean Android Project Structure
-        run: |
-          flutter create . --platforms=android --org com.menmafx.calendar
-
-      - name: Configure Android SDK Versions & Manifest
-        run: |
-          # Pastikan minSdkVersion 21 dan compileSdk / targetSdk 34 di build.gradle
-          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 21/g' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/g' android/app/build.gradle || true
-          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 34/g' android/app/build.gradle || true
-          sed -i 's/flutter.minSdkVersion/21/g' android/app/build.gradle || true
-          sed -i 's/flutter.targetSdkVersion/34/g' android/app/build.gradle || true
-          sed -i 's/flutter.compileSdkVersion/34/g' android/app/build.gradle || true
-
-          # Tambahkan izin dan activity uCrop (image_cropper) jika belum ada di AndroidManifest.xml
-          MANIFEST_FILE="android/app/src/main/AndroidManifest.xml"
-          if ! grep -q "UCropActivity" "$MANIFEST_FILE"; then
-            sed -i '/<\/application>/i \        <!-- Activity untuk UCrop (image_cropper) -->\n        <activity\n            android:name="com.yalantis.ucrop.UCropActivity"\n            android:screenOrientation="portrait"\n            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>' "$MANIFEST_FILE"
-          fi
-          if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST_FILE"; then
-            sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />' "$MANIFEST_FILE"
-          fi
-
-          # Pastikan dependensi androidx.appcompat tersedia untuk UCrop Theme
-          if ! grep -q "androidx.appcompat:appcompat" android/app/build.gradle; then
-            echo -e "\ndependencies {\n    implementation 'androidx.appcompat:appcompat:1.6.1'\n}" >> android/app/build.gradle
-          fi
-
       - name: Get dependencies
         run: flutter pub get
+
+      - name: Run Dart Code Analysis
+        run: flutter analyze
 
       - name: Build Release APK
         run: flutter build apk --release --verbose

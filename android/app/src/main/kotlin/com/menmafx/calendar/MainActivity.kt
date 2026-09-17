@@ -1,4 +1,4 @@
-package com.example.fx_calendar_app
+package com.menmafx.calendar
 
 import io.flutter.embedding.android.FlutterActivity
 

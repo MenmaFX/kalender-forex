@@ -16,12 +16,14 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
 
 android {
-    namespace "com.example.fx_calendar_app"
+    namespace "com.menmafx.calendar"
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
@@ -39,7 +41,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.fx_calendar_app"
+        applicationId "com.menmafx.calendar"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
