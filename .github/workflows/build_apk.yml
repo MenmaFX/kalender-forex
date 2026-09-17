@@ -28,7 +28,7 @@ jobs:
       - name: Regenerate Clean Android Project
         run: |
           rm -rf android/
-          flutter create . --platforms=android --org com.menmafx.calendar
+          flutter create . --platforms=android --org com.menmafx.calendar --project-name kalender_forex
           flutter pub get
 
       - name: Build APK Release
