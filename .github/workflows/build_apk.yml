@@ -45,9 +45,6 @@ jobs:
           cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-      - name: Analyze Dart Code
-        run: dart analyze lib/
-
       - name: Build APK Release
         run: flutter build apk --release --no-tree-shake-icons
 

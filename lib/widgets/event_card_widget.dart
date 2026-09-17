@@ -314,7 +314,7 @@ class EventCardWidget extends StatelessWidget {
         border: Border.all(color: borderColor, width: 0.8),
       ),
       child: Text(
-        text,
+        text ?? '',
         style: GoogleFonts.inter(
           fontSize: 9,
           fontWeight: FontWeight.w800,
