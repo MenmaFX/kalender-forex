@@ -69,9 +69,17 @@ class AppSettingsProvider with ChangeNotifier {
     final favs = prefs.getStringList('favorite_assets');
     if (favs != null) _favoriteAssets = favs;
     final impacts = prefs.getStringList('impact_filters');
-    if (impacts != null) _impactFilter = impacts.toSet();
+    if (impacts != null && impacts.isNotEmpty) {
+      _impactFilter = impacts.toSet();
+    } else {
+      _impactFilter = {'High', 'Medium', 'Low'};
+    }
     final currs = prefs.getStringList('currency_filters');
-    if (currs != null) _currencyFilter = currs.toSet();
+    if (currs != null && currs.isNotEmpty) {
+      _currencyFilter = currs.toSet();
+    } else {
+      _currencyFilter = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'};
+    }
 
     notifyListeners();
   }

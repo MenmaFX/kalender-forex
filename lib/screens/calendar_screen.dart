@@ -7,9 +7,11 @@ import '../providers/calendar_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../widgets/app_theme.dart';
 import '../widgets/calendar_shimmer_loading.dart';
+import '../widgets/custom_background_scaffold.dart';
 import '../widgets/event_card_widget.dart';
 import '../widgets/filter_dialog.dart';
 import 'event_detail_screen.dart';
+import 'settings_screen.dart';
 
 class CalendarScreen extends StatelessWidget {
   const CalendarScreen({Key? key}) : super(key: key);
@@ -26,8 +28,7 @@ class CalendarScreen extends StatelessWidget {
       currencyFilters: settings.currencyFilter,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    return CustomBackgroundScaffold(
       appBar: AppBar(
         backgroundColor: hasCustomBg
             ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
@@ -71,44 +72,14 @@ class CalendarScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          // Tombol Masuk
-          TextButton(
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Halaman Masuk (Login) Myfxbook')),
-              );
-            },
-            child: Text(
-              'Masuk',
-              style: GoogleFonts.inter(
-                color: isDark ? Colors.white : const Color(0xFF1E232A),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          // Tombol Daftar
-          TextButton(
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Halaman Pendaftaran Akun Myfxbook')),
-              );
-            },
-            child: Text(
-              'Daftar',
-              style: GoogleFonts.inter(
-                color: AppTheme.myfxOrange,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          // Tombol Filter
+          // Tombol Filter (Ikon 22-24dp, compact padding/splash 8dp)
           IconButton(
+            iconSize: 22,
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+            splashRadius: 20,
             icon: Icon(
-              Icons.filter_list_rounded,
+              Icons.tune_rounded,
               color: isDark ? Colors.white : const Color(0xFF1E232A),
             ),
             tooltip: 'Filter Kalender',
@@ -120,6 +91,28 @@ class CalendarScreen extends StatelessWidget {
               );
             },
           ),
+          // Tombol Pengaturan (Paling Pojok Kanan)
+          IconButton(
+            iconSize: 22,
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+            splashRadius: 20,
+            icon: Icon(
+              Icons.settings_outlined,
+              color: isDark ? Colors.white : const Color(0xFF1E232A),
+            ),
+            tooltip: 'Pengaturan & Tampilan',
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: Column(

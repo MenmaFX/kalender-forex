@@ -23,9 +23,14 @@ class SettingsScreen extends StatelessWidget {
       {'code': 'AUD/USD', 'desc': 'Dolar Australia vs USD'},
     ];
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    final hasCustomBg = settings.hasCustomBackground;
+
+    return CustomBackgroundScaffold(
       appBar: AppBar(
+        backgroundColor: hasCustomBg
+            ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
+            : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
+        elevation: 0,
         title: Text(
           'Pengaturan & Tampilan',
           style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),

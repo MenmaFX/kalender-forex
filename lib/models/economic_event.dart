@@ -1,10 +1,23 @@
 enum ImpactLevel { high, medium, low, holiday, unknown }
 
 enum SignalRecommendation {
-  strongSellGoldBtc, // Dolar Kuat -> Emas & BTC Turun -> SELL
-  strongBuyGoldBtc,  // Dolar Lemah -> Emas & BTC Naik -> BUY
-  neutral,           // Netral / Wait & see
-  notApplicable,     // Non-USD atau belum rilis
+  strongSellGoldBtc, // Dolar Kuat -> Emas & BTC Turun -> SELL GOLD / BUY USD
+  strongBuyGoldBtc,  // Dolar Lemah -> Emas & BTC Naik -> BUY GOLD / SELL USD
+  buyCurrency,       // Data kuat untuk mata uang non-USD (misal: BUY EUR)
+  sellCurrency,      // Data lemah untuk mata uang non-USD (misal: SELL EUR)
+  neutral,           // Netral / Sesuai Ekspektasi
+  notApplicable,     // Tidak dapat dihitung
+}
+
+enum SignalType {
+  buyGold,
+  sellGold,
+  buyCurrency,
+  sellCurrency,
+  neutral,
+  projectedBuy,
+  projectedSell,
+  none,
 }
 
 class EconomicEvent {
@@ -120,20 +133,105 @@ class EconomicEvent {
     return 0;
   }
 
-  // Analisa Sinyal Khusus XAU/USD (Emas) & BTC/USD
+  // Proyeksi awal untuk event mendatang (belum rilis): Forecast vs Previous
+  // return: 1 (Proyeksi data membaik/menguat), -1 (Proyeksi memburuk/melemah), 0 (Sama / data kurang)
+  int get projectionComparison {
+    if (actual.isNotEmpty) return 0;
+    if (forecast.isEmpty || previous.isEmpty) return 0;
+    final fctVal = _parseNumeric(forecast);
+    final prevVal = _parseNumeric(previous);
+    if (fctVal == null || prevVal == null) return 0;
+
+    final isInverse = title.toLowerCase().contains('unemployment') ||
+        title.toLowerCase().contains('jobless');
+
+    if (fctVal > prevVal) {
+      return isInverse ? -1 : 1;
+    } else if (fctVal < prevVal) {
+      return isInverse ? 1 : -1;
+    }
+    return 0;
+  }
+
+  // Analisa Sinyal Berdasarkan Rilis Data Aktual
   SignalRecommendation get signalRecommendation {
-    if (country.toUpperCase() != 'USD') return SignalRecommendation.notApplicable;
     if (actual.isEmpty) return SignalRecommendation.notApplicable;
 
     final comp = outcomeComparison;
-    if (comp > 0) {
-      // Data USD Bagus -> USD Menguat -> Emas & BTC Tertekan (SELL)
-      return SignalRecommendation.strongSellGoldBtc;
-    } else if (comp < 0) {
-      // Data USD Jelek -> USD Melemah -> Emas & BTC Terdongkrak (BUY)
-      return SignalRecommendation.strongBuyGoldBtc;
+    final c = country.toUpperCase();
+
+    if (c == 'USD') {
+      if (comp > 0) {
+        // Data USD Bagus -> USD Menguat -> Emas & BTC Tertekan (SELL GOLD / BUY USD)
+        return SignalRecommendation.strongSellGoldBtc;
+      } else if (comp < 0) {
+        // Data USD Jelek -> USD Melemah -> Emas & BTC Terdongkrak (BUY GOLD / SELL USD)
+        return SignalRecommendation.strongBuyGoldBtc;
+      }
+      return SignalRecommendation.neutral;
+    } else {
+      if (comp > 0) {
+        return SignalRecommendation.buyCurrency;
+      } else if (comp < 0) {
+        return SignalRecommendation.sellCurrency;
+      }
+      return SignalRecommendation.neutral;
     }
-    return SignalRecommendation.neutral;
+  }
+
+  // Teks Badge Sinyal untuk Kartu Kalender
+  // Mendukung: BUY GOLD / SELL GOLD, BUY USD / SELL USD, BUY [CURR] / SELL [CURR],
+  // dan Indikasi/Proyeksi dampak untuk event mendatang yang belum rilis.
+  String? get signalBadgeText {
+    final c = country.toUpperCase();
+
+    if (actual.isNotEmpty) {
+      // 1. Data Sudah Rilis
+      if (c == 'USD') {
+        if (outcomeComparison > 0) {
+          return 'SELL GOLD';
+        } else if (outcomeComparison < 0) {
+          return 'BUY GOLD';
+        } else {
+          return 'NETRAL';
+        }
+      } else if (c.isNotEmpty && c != 'ALL') {
+        if (outcomeComparison > 0) {
+          return 'BUY $c';
+        } else if (outcomeComparison < 0) {
+          return 'SELL $c';
+        } else {
+          return 'NETRAL';
+        }
+      }
+    } else {
+      // 2. Data Belum Rilis (Mendatang) -> Tampilkan Proyeksi / Indikasi Arah Dampak
+      final proj = projectionComparison;
+      if (proj != 0) {
+        if (c == 'USD') {
+          return proj > 0 ? 'PROYEKSI: SELL GOLD' : 'PROYEKSI: BUY GOLD';
+        } else if (c.isNotEmpty && c != 'ALL') {
+          return proj > 0 ? 'PROYEKSI: BUY $c' : 'PROYEKSI: SELL $c';
+        }
+      } else if (impactLevel == ImpactLevel.high) {
+        return 'MENUNGGU RILIS';
+      }
+    }
+    return null;
+  }
+
+  // Kategori Tipe Sinyal untuk pewarnaan dan styling badge
+  SignalType get signalType {
+    final text = signalBadgeText;
+    if (text == null) return SignalType.none;
+    if (text.startsWith('PROYEKSI: BUY')) return SignalType.projectedBuy;
+    if (text.startsWith('PROYEKSI: SELL')) return SignalType.projectedSell;
+    if (text.contains('BUY GOLD')) return SignalType.buyGold;
+    if (text.contains('SELL GOLD')) return SignalType.sellGold;
+    if (text.startsWith('BUY')) return SignalType.buyCurrency;
+    if (text.startsWith('SELL')) return SignalType.sellCurrency;
+    if (text == 'NETRAL') return SignalType.neutral;
+    return SignalType.none;
   }
 
   // Bendera Emoji berdasarkan Kode Negara/Mata Uang

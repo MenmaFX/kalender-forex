@@ -73,7 +73,13 @@ class CalendarProvider with ChangeNotifier {
   }
 
   void shiftDate(int days) {
-    _selectedDate = _selectedDate.add(Duration(days: days));
+    if (_selectedTab == QuickDateTab.thisWeek || _selectedTab == QuickDateTab.nextWeek) {
+      // Jika sedang di tab minggu, geser 7 hari
+      _selectedDate = _selectedDate.add(Duration(days: days * 7));
+    } else {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+    }
+    _customDateRange = null;
     _selectedTab = QuickDateTab.custom;
     notifyListeners();
   }

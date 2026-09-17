@@ -249,8 +249,8 @@ class _EventDetailScreenState extends State<EventDetailScreen>
             ),
           ),
 
-          // 3. Sinyal Khusus XAU/USD (Emas) & BTC/USD
-          if (widget.event.country.toUpperCase() == 'USD') ...[
+          // 3. Sinyal Khusus XAU/USD (Emas) & Pasangan Valas
+          if (widget.event.country.toUpperCase().isNotEmpty && widget.event.country.toUpperCase() != 'ALL') ...[
             const SizedBox(height: 12),
             GlassCard(
               padding: const EdgeInsets.all(14),
@@ -262,7 +262,9 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                       const Icon(Icons.bolt, color: AppTheme.myfxOrange, size: 20),
                       const SizedBox(width: 6),
                       Text(
-                        'Sinyal Pasar: XAU/USD (Emas) & BTC/USD',
+                        widget.event.country.toUpperCase() == 'USD'
+                            ? 'Sinyal Pasar: XAU/USD (Emas) & Dolar AS'
+                            : 'Sinyal Posisi Pasar: ${widget.event.country.toUpperCase()}',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
@@ -389,18 +391,51 @@ class _EventDetailScreenState extends State<EventDetailScreen>
   }
 
   String _getSignalNarrative(EconomicEvent event) {
+    final c = event.country.toUpperCase();
+
     if (event.actual.isEmpty) {
-      return 'Data belum dirilis. Jika angka aktual USD melebihi ramalan (${event.forecast}), Dolar AS berpotensi melonjak kuat (Saran: SELL XAU/USD & BTC). Sebaliknya bila lebih lemah, Dolar melemah (Saran: BUY).';
+      final proj = event.projectionComparison;
+      if (c == 'USD') {
+        if (proj > 0) {
+          return '📅 EVENT MENDATANG (PROYEKSI: SELL GOLD / BUY USD):\nKonsensus (${event.forecast}) lebih tinggi dari sebelumnya (${event.previous}). Jika rilis aktual sesuai atau melampaui ramalan, Dolar AS diproyeksikan menguat kuat, memicu tekanan jual pada Emas (SELL GOLD) dan lonjakan Dolar (BUY USD).';
+        } else if (proj < 0) {
+          return '📅 EVENT MENDATANG (PROYEKSI: BUY GOLD / SELL USD):\nKonsensus (${event.forecast}) lebih rendah dari sebelumnya (${event.previous}). Jika rilis aktual melemah, Dolar AS berisiko terdepresiasi, mendorong kenaikan harga Emas (BUY GOLD) dan pelemahan Dolar (SELL USD).';
+        } else {
+          return '📅 EVENT MENDATANG:\nData belum dirilis. Jika angka aktual USD melampaui ramalan (${event.forecast}), Dolar AS berpotensi melonjak (Saran: SELL GOLD / BUY USD). Sebaliknya jika di bawah ramalan (Saran: BUY GOLD / SELL USD).';
+        }
+      } else {
+        if (proj > 0) {
+          return '📅 EVENT MENDATANG (PROYEKSI: BUY $c):\nKonsensus (${event.forecast}) diproyeksikan lebih baik dibanding periode lalu (${event.previous}). Jika aktual terkonfirmasi positif, mata uang $c berpotensi menguat terhadap pasangannya.';
+        } else if (proj < 0) {
+          return '📅 EVENT MENDATANG (PROYEKSI: SELL $c):\nKonsensus (${event.forecast}) diperkirakan lebih lemah. Waspadai potensi tekanan jual pada mata uang $c pasca rilis.';
+        } else {
+          return '📅 EVENT MENDATANG:\nData belum dirilis. Pantau rilis aktual terhadap ramalan (${event.forecast}). Angka aktual yang lebih tinggi memberi sentimen positif (BUY $c).';
+        }
+      }
     }
-    switch (event.signalRecommendation) {
-      case SignalRecommendation.strongSellGoldBtc:
-        return '🔥 HASIL DATA SANGAT KUAT: Dolar AS melonjak naik. Permintaan terhadap Emas (XAU/USD) & Bitcoin tertekan turun.\n👉 Rekomendasi: SELL / SHORT Emas & BTC.';
-      case SignalRecommendation.strongBuyGoldBtc:
-        return '🟢 HASIL DATA DI BAWAH PREDIKSI: Dolar AS melemah. Aset lindung nilai seperti Emas (XAU/USD) & Bitcoin berpeluang melesat naik.\n👉 Rekomendasi: BUY / LONG Emas & BTC.';
-      case SignalRecommendation.neutral:
-        return '⚖️ HASIL SESUAI PREDIKSI: Dampak pergerakan harga cenderung tipis atau netral.\n👉 Rekomendasi: Tunggu konfirmasi pola candlestick.';
-      default:
-        return 'Pantau reaksi harga saat penutupan candle 15 menit pasca rilis.';
+
+    if (c == 'USD') {
+      switch (event.signalRecommendation) {
+        case SignalRecommendation.strongSellGoldBtc:
+          return '🔥 HASIL AKTUAL USD SANGAT KUAT (Actual > Forecast):\nDolar AS melonjak naik. Permintaan terhadap Emas (XAU/USD) & Bitcoin tertekan turun tajam.\n👉 Rekomendasi Posisi: SELL GOLD / BUY USD.';
+        case SignalRecommendation.strongBuyGoldBtc:
+          return '🟢 HASIL AKTUAL USD DI BAWAH PREDIKSI (Actual < Forecast):\nDolar AS melemah. Aset lindung nilai seperti Emas (XAU/USD) berpeluang melesat naik tinggi.\n👉 Rekomendasi Posisi: BUY GOLD / SELL USD.';
+        case SignalRecommendation.neutral:
+          return '⚖️ HASIL AKTUAL SESUAI EKSPEKTASI:\nDampak volatilitas instan relatif seimbang.\n👉 Rekomendasi Posisi: NETRAL / Tunggu konfirmasi pola candlestick.';
+        default:
+          return 'Pantau reaksi harga saat penutupan candle 15 menit pasca rilis.';
+      }
+    } else {
+      switch (event.signalRecommendation) {
+        case SignalRecommendation.buyCurrency:
+          return '🟢 HASIL DATA $c LEBIH BAIK DARI KONSENSUS:\nEkonomi $c menunjukkan performa positif. Sentimen bullish untuk $c.\n👉 Rekomendasi Posisi: BUY $c.';
+        case SignalRecommendation.sellCurrency:
+          return '🔴 HASIL DATA $c LEBIH BURUK DARI KONSENSUS:\nEkonomi $c mengalami perlambatan relatif. Sentimen bearish untuk $c.\n👉 Rekomendasi Posisi: SELL $c.';
+        case SignalRecommendation.neutral:
+          return '⚖️ HASIL AKTUAL SESUAI EKSPEKTASI:\nVolatilitas diperkirakan moderat.\n👉 Rekomendasi Posisi: NETRAL.';
+        default:
+          return 'Pantau tren pergerakan mata uang $c pasca rilis berita.';
+      }
     }
   }
 

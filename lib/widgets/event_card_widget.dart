@@ -221,38 +221,11 @@ class EventCardWidget extends StatelessWidget {
                       ),
                     ),
 
-                    // Badge Sinyal XAU/BTC
-                    if (event.signalRecommendation == SignalRecommendation.strongSellGoldBtc ||
-                        event.signalRecommendation == SignalRecommendation.strongBuyGoldBtc)
-                      Container(
-                        margin: const EdgeInsets.only(left: 4, top: 2),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: event.signalRecommendation == SignalRecommendation.strongBuyGoldBtc
-                              ? const Color(0x2E00E676)
-                              : const Color(0x2EFF1744),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: event.signalRecommendation == SignalRecommendation.strongBuyGoldBtc
-                                ? const Color(0xFF00E676)
-                                : const Color(0xFFFF1744),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          event.signalRecommendation == SignalRecommendation.strongBuyGoldBtc
-                              ? 'BUY GOLD'
-                              : 'SELL GOLD',
-                          style: GoogleFonts.inter(
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.2,
-                            color: event.signalRecommendation == SignalRecommendation.strongBuyGoldBtc
-                                ? const Color(0xFF00E676)
-                                : const Color(0xFFFF5252),
-                          ),
-                        ),
-                      ),
+                    // Badge Sinyal (BUY/SELL Currency/Gold & Proyeksi Event Mendatang)
+                    if (event.signalBadgeText != null) ...[
+                      const SizedBox(width: 4),
+                      _buildSignalBadge(event),
+                    ],
                   ],
                 ),
               ),
@@ -286,6 +259,70 @@ class EventCardWidget extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSignalBadge(EconomicEvent event) {
+    final text = event.signalBadgeText ?? '';
+    final type = event.signalType;
+
+    Color bgColor;
+    Color borderColor;
+    Color textColor;
+
+    switch (type) {
+      case SignalType.buyGold:
+      case SignalType.buyCurrency:
+        bgColor = const Color(0x2E00E676);
+        borderColor = const Color(0xFF00E676);
+        textColor = const Color(0xFF00E676);
+        break;
+      case SignalType.sellGold:
+      case SignalType.sellCurrency:
+        bgColor = const Color(0x2EFF1744);
+        borderColor = const Color(0xFFFF1744);
+        textColor = const Color(0xFFFF5252);
+        break;
+      case SignalType.projectedBuy:
+        bgColor = const Color(0x2400E676);
+        borderColor = const Color(0x8800E676);
+        textColor = const Color(0xFF69F0AE);
+        break;
+      case SignalType.projectedSell:
+        bgColor = const Color(0x24FF5252);
+        borderColor = const Color(0x88FF5252);
+        textColor = const Color(0xFFFF8A80);
+        break;
+      case SignalType.neutral:
+        bgColor = const Color(0x229E9E9E);
+        borderColor = const Color(0x669E9E9E);
+        textColor = const Color(0xFFBDBDBD);
+        break;
+      case SignalType.none:
+      default:
+        bgColor = const Color(0x22FFA500);
+        borderColor = const Color(0x66FFA500);
+        textColor = AppTheme.myfxOrange;
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(left: 4, top: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: borderColor, width: 0.8),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 8.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2,
+          color: textColor,
+        ),
+      ),
     );
   }
 }

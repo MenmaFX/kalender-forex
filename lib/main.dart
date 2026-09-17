@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/calendar_provider.dart';
 import 'providers/app_settings_provider.dart';
 import 'services/notification_service.dart';
-import 'screens/main_navigation_screen.dart';
+import 'screens/calendar_screen.dart';
 import 'widgets/app_theme.dart';
 
 void main() async {
@@ -58,7 +58,7 @@ class FxCalendarApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: const MainNavigationScreen(),
+      home: const CalendarScreen(),
     );
   }
 }
