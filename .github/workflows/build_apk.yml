@@ -28,13 +28,11 @@ jobs:
       - name: Regenerate Clean Android Project
         run: |
           rm -rf android/
-          flutter create . --platforms=android --org com.menmafx.calendar --project-name fx_calendar_app
+          flutter create . --platforms=android --org com.menmafx.calendar --project-name kalender_forex
           flutter pub get
 
-      - name: Run Flutter Analyze
-
       - name: Build APK Release
-        run: flutter build apk --release --no-tree-shake-icons -v
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
