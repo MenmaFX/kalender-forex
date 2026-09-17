@@ -31,8 +31,11 @@ jobs:
           flutter create . --platforms=android --org com.menmafx.calendar --project-name kalender_forex
           flutter pub get
 
+      - name: Verify Dart Code
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
       - name: Build APK Release
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --verbose
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
