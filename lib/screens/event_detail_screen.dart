@@ -92,7 +92,9 @@ class _EventDetailScreenState extends State<EventDetailScreen>
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           // 1. Header Ringkasan Berita
           GlassCard(
             padding: const EdgeInsets.all(16),
@@ -362,8 +364,9 @@ class _EventDetailScreenState extends State<EventDetailScreen>
           const SizedBox(height: 24),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMetricBox(String label, String value, {bool isAccent = false}) {
     return Column(
