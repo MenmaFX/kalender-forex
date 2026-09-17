@@ -24,11 +24,11 @@ jobs:
         with:
           flutter-version: '3.24.5'
           channel: 'stable'
-          cache: false
 
-      - name: Clean and Get Dependencies
+      - name: Regenerate Clean Android Project
         run: |
-          flutter clean
+          rm -rf android/
+          flutter create . --platforms=android --org com.menmafx.calendar
           flutter pub get
 
       - name: Build APK Release
