@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/calendar_provider.dart';
 import 'providers/app_settings_provider.dart';
 import 'services/notification_service.dart';
-import 'screens/calendar_screen.dart';
+import 'screens/splash_screen.dart';
 import 'widgets/app_theme.dart';
 
 void main() async {
@@ -53,12 +53,12 @@ class FxCalendarApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      title: 'Kalender Ekonomi & Sinyal Forex/Kripto',
+      title: 'FX Impact',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: const CalendarScreen(),
+      home: const SplashScreen(),
     );
   }
 }

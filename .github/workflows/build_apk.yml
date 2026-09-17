@@ -36,6 +36,17 @@ jobs:
           sed -i 's/targetSdk = flutter.targetSdkVersion/targetSdk = 35/g' android/app/build.gradle
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle 2>/dev/null || true
           sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle 2>/dev/null || true
+          # Konfigurasikan nama aplikasi FX Impact & copy logo launcher
+          sed -i 's/android:label=".*"/android:label="FX Impact"/g' android/app/src/main/AndroidManifest.xml
+          mkdir -p android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi
+          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/logo/app_logo.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+      - name: Analyze Dart Code
+        run: dart analyze lib/
 
       - name: Build APK Release
         run: flutter build apk --release --no-tree-shake-icons
@@ -43,5 +54,5 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kalender-forex-release-apk
+          name: fx-impact-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk

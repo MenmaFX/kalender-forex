@@ -1,26 +1,77 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
+import '../services/app_strings.dart';
 import '../widgets/app_theme.dart';
 import '../widgets/custom_background_scaffold.dart';
+import 'crop_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  Future<void> _handlePickAndCrop(BuildContext context, AppSettingsProvider settings, bool isPortrait) async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 98,
+      );
+
+      if (picked == null || !context.mounted) return;
+
+      final croppedPath = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CropScreen(
+            imagePath: picked.path,
+            initialIsPortrait: isPortrait,
+            language: settings.language,
+          ),
+        ),
+      );
+
+      if (croppedPath != null && context.mounted) {
+        await settings.setCroppedWallpaper(
+          filePath: croppedPath,
+          isPortrait: isPortrait,
+        );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppStrings.wallpaperApplied(
+                  settings.language,
+                  isPortrait ? 'Portrait' : 'Landscape',
+                ),
+              ),
+              backgroundColor: const Color(0xFF181B20),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking or cropping image: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
+    final lang = settings.language;
 
     final availableAssets = [
-      {'code': 'XAU/USD', 'desc': 'Emas Dunia (Spot Gold)'},
-      {'code': 'BTC/USD', 'desc': 'Bitcoin (Crypto Leader)'},
-      {'code': 'EUR/USD', 'desc': 'Euro vs Dolar AS'},
-      {'code': 'GBP/USD', 'desc': 'Poundsterling vs Dolar AS'},
-      {'code': 'USD/JPY', 'desc': 'Dolar AS vs Yen Jepang'},
-      {'code': 'AUD/USD', 'desc': 'Dolar Australia vs USD'},
+      {'code': 'XAU/USD', 'desc': lang == 'en' ? 'Spot Gold (Global Commodity)' : 'Emas Dunia (Spot Gold)'},
+      {'code': 'BTC/USD', 'desc': lang == 'en' ? 'Bitcoin (Crypto Leader)' : 'Bitcoin (Crypto Leader)'},
+      {'code': 'EUR/USD', 'desc': lang == 'en' ? 'Euro vs US Dollar' : 'Euro vs Dolar AS'},
+      {'code': 'GBP/USD', 'desc': lang == 'en' ? 'British Pound vs US Dollar' : 'Poundsterling vs Dolar AS'},
+      {'code': 'USD/JPY', 'desc': lang == 'en' ? 'US Dollar vs Japanese Yen' : 'Dolar AS vs Yen Jepang'},
+      {'code': 'AUD/USD', 'desc': lang == 'en' ? 'Australian Dollar vs USD' : 'Dolar Australia vs USD'},
     ];
 
     final hasCustomBg = settings.hasCustomBackground;
@@ -32,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
             : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
         elevation: 0,
         title: Text(
-          'Pengaturan & Tampilan',
+          AppStrings.settingsTitle(lang),
           style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
         ),
       ),
@@ -42,47 +93,51 @@ class SettingsScreen extends StatelessWidget {
           // ==========================================
           // 1. OPSI MODE TEMA & TAMPILAN
           // ==========================================
-          _buildSectionHeader('TEMA & TAMPILAN APLIKASI'),
+          _buildSectionHeader(AppStrings.themeSection(lang)),
           GlassCard(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               children: [
                 _buildThemeRadioTile(
                   context: context,
-                  title: 'Mode Gelap Default (Dark Theme)',
-                  subtitle: 'Tema gelap khas Myfxbook (#121418)',
+                  title: AppStrings.darkDefaultTitle(lang),
+                  subtitle: AppStrings.darkDefaultDesc(lang),
                   value: ThemeModeOption.darkDefault,
                   groupValue: settings.themeModeOption,
+                  isDark: isDark,
                   onChanged: (val) {
                     if (val != null) settings.setThemeModeOption(val);
                   },
                 ),
                 _buildThemeRadioTile(
                   context: context,
-                  title: 'Mode Terang Default (Light Theme)',
-                  subtitle: 'Tampilan bersih, kontras tinggi & rapi',
+                  title: AppStrings.lightDefaultTitle(lang),
+                  subtitle: AppStrings.lightDefaultDesc(lang),
                   value: ThemeModeOption.lightDefault,
                   groupValue: settings.themeModeOption,
+                  isDark: isDark,
                   onChanged: (val) {
                     if (val != null) settings.setThemeModeOption(val);
                   },
                 ),
                 _buildThemeRadioTile(
                   context: context,
-                  title: 'Mode Gelap dengan Custom Background (Dark Glass)',
-                  subtitle: 'Efek frosted glass gelap di atas wallpaper galeri Anda',
+                  title: AppStrings.darkGlassTitle(lang),
+                  subtitle: AppStrings.darkGlassDesc(lang),
                   value: ThemeModeOption.darkGlassCustom,
                   groupValue: settings.themeModeOption,
+                  isDark: isDark,
                   onChanged: (val) {
                     if (val != null) settings.setThemeModeOption(val);
                   },
                 ),
                 _buildThemeRadioTile(
                   context: context,
-                  title: 'Mode Terang dengan Custom Background (Light Glass)',
-                  subtitle: 'Efek frosted glass terang di atas wallpaper galeri Anda',
+                  title: AppStrings.lightGlassTitle(lang),
+                  subtitle: AppStrings.lightGlassDesc(lang),
                   value: ThemeModeOption.lightGlassCustom,
                   groupValue: settings.themeModeOption,
+                  isDark: isDark,
                   onChanged: (val) {
                     if (val != null) settings.setThemeModeOption(val);
                   },
@@ -94,16 +149,16 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 18),
 
           // ==========================================
-          // 2. ATUR WALLPAPER LATAR (PORTRAIT & LANDSCAPE)
+          // 2. ATUR WALLPAPER LATAR DENGAN CROP INTERAKTIF
           // ==========================================
-          _buildSectionHeader('ATUR WALLPAPER LATAR DARI GALERI'),
+          _buildSectionHeader(AppStrings.wallpaperSection(lang)),
           GlassCard(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pilih foto langsung dari galeri HP Anda. Aplikasi otomatis menyesuaikan gambar dengan rasio Portrait maupun Landscape menggunakan BoxFit.cover secara responsif.',
+                  AppStrings.wallpaperDesc(lang),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: isDark ? const Color(0xFFB0B7C3) : const Color(0xFF555F6D),
@@ -112,45 +167,29 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Baris Wallpaper Portrait (Rasio Tegak / Portrait)
+                // Baris Wallpaper Portrait (9:16)
                 _buildWallpaperPickerRow(
                   context: context,
-                  title: 'Wallpaper Portrait (Mode Tegak)',
-                  subtitle: 'Tampilan penuh otomatis (BoxFit.cover)',
+                  title: AppStrings.portraitWallpaper(lang),
+                  subtitle: 'Rasio 9:16 (Crop & Zoom interaktif)',
                   imagePath: settings.portraitWallpaperPath,
-                  onPick: () async {
-                    final success = await settings.pickPortraitWallpaper();
-                    if (success && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✅ Wallpaper Portrait berhasil dipasang!'),
-                          backgroundColor: Color(0xFF181B20),
-                        ),
-                      );
-                    }
-                  },
+                  lang: lang,
+                  isDark: isDark,
+                  onPick: () => _handlePickAndCrop(context, settings, true),
                   onDelete: () => settings.removeWallpaper(isPortrait: true),
                 ),
 
                 const Divider(height: 24),
 
-                // Baris Wallpaper Landscape (Rasio Miring / Landscape)
+                // Baris Wallpaper Landscape (16:9)
                 _buildWallpaperPickerRow(
                   context: context,
-                  title: 'Wallpaper Landscape (Mode Miring)',
-                  subtitle: 'Tampilan penuh otomatis (BoxFit.cover)',
+                  title: AppStrings.landscapeWallpaper(lang),
+                  subtitle: 'Rasio 16:9 (Crop & Zoom interaktif)',
                   imagePath: settings.landscapeWallpaperPath,
-                  onPick: () async {
-                    final success = await settings.pickLandscapeWallpaper();
-                    if (success && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✅ Wallpaper Landscape berhasil dipasang!'),
-                          backgroundColor: Color(0xFF181B20),
-                        ),
-                      );
-                    }
-                  },
+                  lang: lang,
+                  isDark: isDark,
+                  onPick: () => _handlePickAndCrop(context, settings, false),
                   onDelete: () => settings.removeWallpaper(isPortrait: false),
                 ),
               ],
@@ -160,9 +199,9 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 18),
 
           // ==========================================
-          // 3. PREFERENSI NOTIFIKASI & BAHASA
+          // 3. PREFERENSI SISTEM & MULTI-BAHASA
           // ==========================================
-          _buildSectionHeader('PREFERENSI SISTEM'),
+          _buildSectionHeader(AppStrings.systemSection(lang)),
           GlassCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Column(
@@ -170,16 +209,26 @@ class SettingsScreen extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Bahasa Aplikasi',
-                    style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600),
+                    AppStrings.appLanguage(lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
                   ),
                   subtitle: Text(
                     settings.language == 'id' ? 'Bahasa Indonesia' : 'English',
-                    style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   ),
                   trailing: DropdownButton<String>(
                     value: settings.language,
                     underline: const SizedBox(),
+                    dropdownColor: isDark ? const Color(0xFF1E222A) : Colors.white,
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                     items: const [
                       DropdownMenuItem(value: 'id', child: Text('Bahasa Indonesia')),
                       DropdownMenuItem(value: 'en', child: Text('English')),
@@ -193,20 +242,30 @@ class SettingsScreen extends StatelessWidget {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Pengingat Pra-Rilis Berita',
-                    style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600),
+                    AppStrings.reminderBefore(lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
                   ),
                   subtitle: Text(
-                    'Notifikasi berbunyi ${settings.alertMinutesBefore} menit sebelum data rilis',
-                    style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
+                    AppStrings.reminderSubtitle(lang, settings.alertMinutesBefore),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   ),
                   trailing: DropdownButton<int>(
                     value: settings.alertMinutesBefore,
                     underline: const SizedBox(),
-                    items: const [
-                      DropdownMenuItem(value: 5, child: Text('5 Menit')),
-                      DropdownMenuItem(value: 15, child: Text('15 Menit')),
-                      DropdownMenuItem(value: 30, child: Text('30 Menit')),
+                    dropdownColor: isDark ? const Color(0xFF1E222A) : Colors.white,
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    items: [
+                      DropdownMenuItem(value: 5, child: Text(AppStrings.minutesSuffix(lang, 5))),
+                      DropdownMenuItem(value: 15, child: Text(AppStrings.minutesSuffix(lang, 15))),
+                      DropdownMenuItem(value: 30, child: Text(AppStrings.minutesSuffix(lang, 30))),
                     ],
                     onChanged: (val) {
                       if (val != null) settings.setAlertMinutes(val);
@@ -222,7 +281,7 @@ class SettingsScreen extends StatelessWidget {
           // ==========================================
           // 4. PASANGAN ASET FAVORIT
           // ==========================================
-          _buildSectionHeader('PASANGAN ASET FAVORIT'),
+          _buildSectionHeader(AppStrings.favoriteSection(lang)),
           GlassCard(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
@@ -235,11 +294,15 @@ class SettingsScreen extends StatelessWidget {
                   activeColor: AppTheme.myfxOrange,
                   title: Text(
                     code,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
                   ),
                   subtitle: Text(
                     desc,
-                    style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   ),
                   value: isChecked,
                   onChanged: (_) => settings.toggleFavoriteAsset(code),
@@ -251,28 +314,33 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 18),
 
           // ==========================================
-          // 5. KAMUS RAMAH PEMULA
+          // 5. KAMUS RAMAH PEMULA (ADAPTIF WARNA TERANG/GELAP)
           // ==========================================
-          _buildSectionHeader('KAMUS RAMAH PEMULA (GLOSARIUM)'),
+          _buildSectionHeader(AppStrings.glossarySection(lang)),
           _buildGlossaryCard(
-            title: '1. Apa itu "Aktual" (Akt.)?',
-            desc: 'Angka resmi yang baru saja dirilis oleh pemerintah atau lembaga statistik keuangan hari ini.',
+            isDark: isDark,
+            title: AppStrings.glossary1Title(lang),
+            desc: AppStrings.glossary1Desc(lang),
           ),
           _buildGlossaryCard(
-            title: '2. Apa itu "Konsensus / Ramalan" (Kons.)?',
-            desc: 'Perkiraan rata-rata analis dan ekonom ternama dunia sebelum data dirilis ke publik.',
+            isDark: isDark,
+            title: AppStrings.glossary2Title(lang),
+            desc: AppStrings.glossary2Desc(lang),
           ),
           _buildGlossaryCard(
-            title: '3. Apa itu "Sebelumnya" (Sebl.)?',
-            desc: 'Angka data rilis resmi pada periode bulan atau kuartal terdahulu.',
+            isDark: isDark,
+            title: AppStrings.glossary3Title(lang),
+            desc: AppStrings.glossary3Desc(lang),
           ),
           _buildGlossaryCard(
-            title: '4. Arti Warna Indikator Dampak',
-            desc: '🔴 Merah (Tinggi): Pasar bergerak volatil puluhan hingga ratusan pips.\n🟡 Oranye (Sedang): Pergerakan harga wajar terukur.\n🟢 Hijau (Rendah): Pengaruh fluktuasi harga relatif minim.',
+            isDark: isDark,
+            title: AppStrings.glossary4Title(lang),
+            desc: AppStrings.glossary4Desc(lang),
           ),
           _buildGlossaryCard(
-            title: '5. Sinyal Emas (XAU/USD) & Bitcoin (BTC/USD)',
-            desc: 'Emas dan Bitcoin diperdagangkan berpasangan terhadap Dolar AS (USD):\n• Data USD Lebih Kuat dari Konsensus ➔ Dolar menguat perkasa ➔ Emas & Kripto tertekan (Saran: SELL).\n• Data USD Lebih Lemah dari Konsensus ➔ Dolar melemah lesu ➔ Emas & Kripto berpeluang reli naik (Saran: BUY).',
+            isDark: isDark,
+            title: AppStrings.glossary5Title(lang),
+            desc: AppStrings.glossary5Desc(lang),
           ),
           const SizedBox(height: 30),
         ],
@@ -301,6 +369,7 @@ class SettingsScreen extends StatelessWidget {
     required String subtitle,
     required ThemeModeOption value,
     required ThemeModeOption groupValue,
+    required bool isDark,
     required ValueChanged<ThemeModeOption?> onChanged,
   }) {
     return RadioListTile<ThemeModeOption>(
@@ -310,11 +379,15 @@ class SettingsScreen extends StatelessWidget {
       onChanged: onChanged,
       title: Text(
         title,
-        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+        ),
       ),
       subtitle: Text(
         subtitle,
-        style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+        style: GoogleFonts.inter(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
       ),
     );
   }
@@ -324,6 +397,8 @@ class SettingsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required String? imagePath,
+    required String lang,
+    required bool isDark,
     required VoidCallback onPick,
     required VoidCallback onDelete,
   }) {
@@ -337,8 +412,11 @@ class SettingsScreen extends StatelessWidget {
           height: 54,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFF38404D), width: 1),
-            color: const Color(0xFF1E222A),
+            border: Border.all(
+              color: isDark ? const Color(0xFF38404D) : const Color(0xFFCFD8DC),
+              width: 1,
+            ),
+            color: isDark ? const Color(0xFF1E222A) : const Color(0xFFECEFF1),
           ),
           child: hasImage
               ? ClipRRect(
@@ -348,8 +426,12 @@ class SettingsScreen extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 )
-              : const Center(
-                  child: Icon(Icons.image_outlined, color: Colors.grey, size: 24),
+              : Center(
+                  child: Icon(
+                    Icons.image_outlined,
+                    color: isDark ? Colors.grey[500] : Colors.grey[600],
+                    size: 24,
+                  ),
                 ),
         ),
         const SizedBox(width: 12),
@@ -360,11 +442,15 @@ class SettingsScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                ),
               ),
               Text(
                 subtitle,
-                style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+                style: GoogleFonts.inter(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
               ),
               const SizedBox(height: 6),
               Row(
@@ -377,8 +463,8 @@ class SettingsScreen extends StatelessWidget {
                       textStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                     onPressed: onPick,
-                    icon: const Icon(Icons.photo_library_outlined, size: 14),
-                    label: Text(hasImage ? 'Ganti Foto' : 'Pilih Foto'),
+                    icon: const Icon(Icons.crop_rotate_rounded, size: 14),
+                    label: Text(hasImage ? AppStrings.changePhoto(lang) : AppStrings.choosePhoto(lang)),
                   ),
                   if (hasImage) ...[
                     const SizedBox(width: 8),
@@ -389,7 +475,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline, size: 14),
-                      label: const Text('Hapus'),
+                      label: Text(AppStrings.deletePhoto(lang)),
                     ),
                   ],
                 ],
@@ -401,7 +487,15 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGlossaryCard({required String title, required String desc}) {
+  Widget _buildGlossaryCard({
+    required bool isDark,
+    required String title,
+    required String desc,
+  }) {
+    // KONTRAST TINGGI ADAPTIF: Hitam pekat #1A1A1A untuk Light Mode, Putih/abu terang untuk Dark Mode
+    final Color titleColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final Color descColor = isDark ? const Color(0xFFEEEEEE) : const Color(0xFF2E3842);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: GlassCard(
@@ -413,8 +507,8 @@ class SettingsScreen extends StatelessWidget {
               title,
               style: GoogleFonts.inter(
                 fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                color: titleColor,
               ),
             ),
             const SizedBox(height: 4),
@@ -422,8 +516,9 @@ class SettingsScreen extends StatelessWidget {
               desc,
               style: GoogleFonts.inter(
                 fontSize: 11.5,
-                color: const Color(0xFFCCCCCC),
-                height: 1.4,
+                color: descColor,
+                fontWeight: isDark ? FontWeight.w400 : FontWeight.w500,
+                height: 1.45,
               ),
             ),
           ],

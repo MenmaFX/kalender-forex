@@ -9,7 +9,7 @@ class CalendarService {
   static const String cacheKey = 'cached_economic_events';
   static const String lastFetchKey = 'last_fetch_timestamp';
 
-  // Ambil data kalender ekonomi (dengan fallback cache, multi-source, & komprehensif multi-week)
+  // Ambil data kalender ekonomi (dengan fallback cache & generator historis multi-bulan)
   Future<List<EconomicEvent>> fetchCalendarEvents() async {
     final prefs = await SharedPreferences.getInstance();
     List<EconomicEvent> fetchedEvents = [];
@@ -50,20 +50,18 @@ class CalendarService {
       }
     }
 
-    // Gabungkan dengan generator komprehensif multi-minggu (past weeks & future weeks)
-    // agar navigasi Kemarin, Hari Ini, Besok, Minggu Ini, Minggu Depan, dan Date Picker
-    // selalu terisi data lengkap dan tidak menampilkan halaman kosong.
-    return _mergeMultiWeekEvents(fetchedEvents);
+    // Gabungkan dengan generator komprehensif multi-bulan (Juli, Agustus, September, Oktober, dll)
+    return _mergeMultiMonthEvents(fetchedEvents);
   }
 
-  // Penggabungan data API dengan data multi-week (riwayat minggu-minggu lalu & proyeksi ke depan)
-  List<EconomicEvent> _mergeMultiWeekEvents(List<EconomicEvent> primary) {
-    final fallbackList = _generateMultiWeekEvents();
+  // Penggabungan data API dengan generator komprehensif multi-bulan
+  List<EconomicEvent> _mergeMultiMonthEvents(List<EconomicEvent> primary) {
+    final fallbackList = _generateMultiMonthEvents();
     if (primary.isEmpty) return fallbackList;
 
     final Map<String, EconomicEvent> eventMap = {};
 
-    // Masukkan data sintetis multi-week terlebih dahulu
+    // Masukkan data sintetis multi-bulan terlebih dahulu
     for (final e in fallbackList) {
       final key = '${e.country}_${e.title}_${e.date.year}-${e.date.month}-${e.date.day}';
       eventMap[key] = e;
@@ -114,10 +112,10 @@ class CalendarService {
     return history;
   }
 
-  // Mock & Fallback Events Komprehensif Multi-Minggu (Multi-Week)
-  // Menjamin navigasi Kemarin, Hari Ini, Besok, Minggu Ini, Minggu Depan,
-  // serta custom date range (-30 hari s/d +30 hari) selalu terisi data.
-  List<EconomicEvent> _generateMultiWeekEvents() {
+  // Generator Komprehensif Multi-Bulan (-90 hari s/d +90 hari)
+  // Menjamin navigasi ke bulan-bulan lalu (Juli, Agustus) maupun bulan depan
+  // selalu berisi rilis lengkap (High, Medium, Low) dengan Akt., Kons., Sebl.
+  List<EconomicEvent> _generateMultiMonthEvents() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final List<EconomicEvent> list = [];
@@ -131,17 +129,17 @@ class CalendarService {
       {'country': 'USD', 'title': 'Unemployment Rate (Tingkat Pengangguran)', 'impact': 'High', 'fct': '4.2%', 'prev': '4.3%', 'hour': 19, 'min': 30},
       {'country': 'USD', 'title': 'FOMC Statement & Federal Funds Rate', 'impact': 'High', 'fct': '5.00%', 'prev': '5.25%', 'hour': 1, 'min': 0},
       {'country': 'USD', 'title': 'ISM Manufacturing PMI', 'impact': 'Medium', 'fct': '48.5', 'prev': '47.8', 'hour': 21, 'min': 0},
-      {'country': 'USD', 'title': 'Natural Gas Storage', 'impact': 'Low', 'fct': '58B', 'prev': '40B', 'hour': 21, 'min': 30},
       {'country': 'USD', 'title': 'Crude Oil Inventories', 'impact': 'Medium', 'fct': '-1.2M', 'prev': '0.8M', 'hour': 21, 'min': 30},
+      {'country': 'USD', 'title': 'Natural Gas Storage', 'impact': 'Low', 'fct': '58B', 'prev': '40B', 'hour': 21, 'min': 30},
       // EUR
       {'country': 'EUR', 'title': 'ECB Main Refinancing Rate', 'impact': 'High', 'fct': '3.65%', 'prev': '3.75%', 'hour': 19, 'min': 15},
+      {'country': 'EUR', 'title': 'CPI y/y Flash Estimate', 'impact': 'High', 'fct': '2.2%', 'prev': '2.6%', 'hour': 16, 'min': 0},
       {'country': 'EUR', 'title': 'German Flash Manufacturing PMI', 'impact': 'Medium', 'fct': '43.2', 'prev': '42.4', 'hour': 14, 'min': 30},
       {'country': 'EUR', 'title': 'Consumer Confidence', 'impact': 'Low', 'fct': '-13.2', 'prev': '-13.4', 'hour': 21, 'min': 0},
-      {'country': 'EUR', 'title': 'CPI y/y Flash Estimate', 'impact': 'High', 'fct': '2.2%', 'prev': '2.6%', 'hour': 16, 'min': 0},
       // GBP
       {'country': 'GBP', 'title': 'CPI y/y (Inflasi Tahunan Inggris)', 'impact': 'High', 'fct': '2.2%', 'prev': '2.2%', 'hour': 13, 'min': 0},
-      {'country': 'GBP', 'title': 'Retail Sales m/m', 'impact': 'Medium', 'fct': '0.4%', 'prev': '0.5%', 'hour': 13, 'min': 0},
       {'country': 'GBP', 'title': 'BOE Official Bank Rate', 'impact': 'High', 'fct': '5.00%', 'prev': '5.00%', 'hour': 18, 'min': 0},
+      {'country': 'GBP', 'title': 'Retail Sales m/m', 'impact': 'Medium', 'fct': '0.4%', 'prev': '0.5%', 'hour': 13, 'min': 0},
       {'country': 'GBP', 'title': 'Claimant Count Change', 'impact': 'Low', 'fct': '20.2K', 'prev': '18.5K', 'hour': 13, 'min': 0},
       // JPY
       {'country': 'JPY', 'title': 'BOJ Monetary Policy Statement & Rate', 'impact': 'High', 'fct': '0.25%', 'prev': '0.25%', 'hour': 10, 'min': 30},
@@ -153,7 +151,7 @@ class CalendarService {
       {'country': 'AUD', 'title': 'Retail Sales m/m', 'impact': 'Medium', 'fct': '0.3%', 'prev': '0.5%', 'hour': 8, 'min': 30},
       // CAD
       {'country': 'CAD', 'title': 'BOC Monetary Policy Rate', 'impact': 'High', 'fct': '4.25%', 'prev': '4.50%', 'hour': 20, 'min': 45},
-      {'country': 'CAD', 'title': 'Employment Change & Unemployment Rate', 'impact': 'High', 'fct': '26.4K', 'prev': '-2.8K', 'hour': 19, 'min': 30},
+      {'country': 'CAD', 'title': 'Employment Change & Unemployment', 'impact': 'High', 'fct': '26.4K', 'prev': '-2.8K', 'hour': 19, 'min': 30},
       {'country': 'CAD', 'title': 'CPI m/m', 'impact': 'Medium', 'fct': '0.1%', 'prev': '0.4%', 'hour': 19, 'min': 30},
       // CHF
       {'country': 'CHF', 'title': 'SNB Policy Rate & Press Conference', 'impact': 'High', 'fct': '1.25%', 'prev': '1.25%', 'hour': 14, 'min': 30},
@@ -164,8 +162,8 @@ class CalendarService {
       {'country': 'NZD', 'title': 'Visitor Arrivals m/m', 'impact': 'Low', 'fct': '0.5%', 'prev': '-0.1%', 'hour': 5, 'min': 45},
     ];
 
-    // Buat data untuk rentang dari -28 hari (4 minggu lalu) hingga +28 hari (4 minggu ke depan)
-    for (int dayOffset = -28; dayOffset <= 28; dayOffset++) {
+    // Buat data untuk rentang dari -90 hari (3 bulan lalu) hingga +90 hari (3 bulan ke depan)
+    for (int dayOffset = -90; dayOffset <= 90; dayOffset++) {
       final targetDate = today.add(Duration(days: dayOffset));
       final weekday = targetDate.weekday; // 1 = Senin, 7 = Minggu
 
@@ -173,7 +171,7 @@ class CalendarService {
       final int eventCount = (weekday >= 6) ? 1 : 4;
 
       for (int i = 0; i < eventCount; i++) {
-        final tIndex = ((dayOffset.abs() * 5) + (weekday * 3) + i) % templates.length;
+        final tIndex = ((dayOffset.abs() * 7) + (weekday * 3) + i) % templates.length;
         final t = templates[tIndex];
 
         final eventTime = DateTime(
@@ -190,17 +188,24 @@ class CalendarService {
           final fctStr = t['fct'] as String;
           final isPct = fctStr.contains('%');
           final isK = fctStr.toUpperCase().contains('K');
+          final isM = fctStr.toUpperCase().contains('M');
           final numBase = double.tryParse(fctStr.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 2.0;
 
           // Variasi realistis actual: sebagian lebih baik, sebagian lebih buruk
-          final delta = ((dayOffset + i) % 3 == 0)
-              ? (isK ? 15.0 : 0.2)
-              : (((dayOffset + i) % 3 == 1) ? (isK ? -12.0 : -0.15) : 0.0);
+          double delta = 0.0;
+          if ((dayOffset + i) % 3 == 0) {
+            delta = isK ? 18.0 : (isM ? 0.6 : 0.2);
+          } else if ((dayOffset + i) % 3 == 1) {
+            delta = isK ? -15.0 : (isM ? -0.5 : -0.15);
+          }
+
           final actNum = numBase + delta;
           if (isPct) {
             actualVal = '${actNum.toStringAsFixed(1)}%';
           } else if (isK) {
             actualVal = '${actNum.toInt()}K';
+          } else if (isM) {
+            actualVal = '${actNum.toStringAsFixed(1)}M';
           } else {
             actualVal = actNum.toStringAsFixed(1);
           }

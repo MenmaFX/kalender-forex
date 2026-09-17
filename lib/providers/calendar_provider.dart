@@ -158,18 +158,20 @@ class CalendarProvider with ChangeNotifier {
     return _service.getHistoricalReleases(event);
   }
 
-  String get formattedActiveDateHeader {
+  String formattedActiveDateHeaderLocalized(String lang) {
     if (_selectedTab == QuickDateTab.thisWeek) {
-      return 'Minggu Ini (This Week)';
+      return lang == 'en' ? 'This Week' : 'Minggu Ini';
     } else if (_selectedTab == QuickDateTab.nextWeek) {
-      return 'Minggu Depan (Next Week)';
+      return lang == 'en' ? 'Next Week' : 'Minggu Depan';
     } else if (_selectedTab == QuickDateTab.custom && _customDateRange != null) {
-      final s = DateFormat('dd MMM yyyy').format(_customDateRange!.start);
-      final e = DateFormat('dd MMM yyyy').format(_customDateRange!.end);
+      final s = DateFormat('dd MMM yyyy', lang == 'en' ? 'en_US' : 'id_ID').format(_customDateRange!.start);
+      final e = DateFormat('dd MMM yyyy', lang == 'en' ? 'en_US' : 'id_ID').format(_customDateRange!.end);
       return '$s - $e';
     }
 
     // Format Hari: "Thursday, September 17, 2026"
-    return DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate);
+    return DateFormat('EEEE, MMMM d, yyyy', lang == 'en' ? 'en_US' : 'id_ID').format(_selectedDate);
   }
+
+  String get formattedActiveDateHeader => formattedActiveDateHeaderLocalized('id');
 }

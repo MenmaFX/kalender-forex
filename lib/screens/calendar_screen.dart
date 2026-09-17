@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../models/economic_event.dart';
 import '../providers/calendar_provider.dart';
 import '../providers/app_settings_provider.dart';
+import '../services/app_strings.dart';
 import '../widgets/app_theme.dart';
 import '../widgets/calendar_shimmer_loading.dart';
 import '../widgets/custom_background_scaffold.dart';
@@ -22,6 +22,7 @@ class CalendarScreen extends StatelessWidget {
     final settings = Provider.of<AppSettingsProvider>(context);
     final isDark = settings.isDarkMode;
     final hasCustomBg = settings.hasCustomBackground;
+    final lang = settings.language;
 
     final filteredEvents = calendar.getFilteredEvents(
       impactFilters: settings.impactFilter,
@@ -29,12 +30,13 @@ class CalendarScreen extends StatelessWidget {
     );
 
     return CustomBackgroundScaffold(
+      // Scaffold murni single-screen: TIDAK ADA BottomNavigationBar, TIDAK ADA tombol Masuk/Daftar
       appBar: AppBar(
         backgroundColor: hasCustomBg
             ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
             : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
         elevation: 0,
-        titleSpacing: 12,
+        titleSpacing: 14,
         title: Row(
           children: [
             Container(
@@ -62,17 +64,18 @@ class CalendarScreen extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Kalender',
+              AppStrings.calendarTitle(lang),
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w800,
                 fontSize: 16.5,
                 letterSpacing: -0.2,
+                color: isDark ? Colors.white : const Color(0xFF1E232A),
               ),
             ),
           ],
         ),
         actions: [
-          // Tombol Filter (Ikon 22-24dp, compact padding/splash 8dp)
+          // Tombol Filter (Sebelah Kiri Tombol Pengaturan, Ikon 22-24dp, compact padding/splash 8dp)
           IconButton(
             iconSize: 22,
             padding: const EdgeInsets.all(8),
@@ -82,7 +85,7 @@ class CalendarScreen extends StatelessWidget {
               Icons.tune_rounded,
               color: isDark ? Colors.white : const Color(0xFF1E232A),
             ),
-            tooltip: 'Filter Kalender',
+            tooltip: AppStrings.filterTitle(lang),
             onPressed: () {
               HapticFeedback.mediumImpact();
               showDialog(
@@ -91,7 +94,7 @@ class CalendarScreen extends StatelessWidget {
               );
             },
           ),
-          // Tombol Pengaturan (Paling Pojok Kanan)
+          // Tombol Pengaturan (Paling Pojok Kanan, Ikon 22-24dp, compact padding/splash 8dp)
           IconButton(
             iconSize: 22,
             padding: const EdgeInsets.all(8),
@@ -101,7 +104,7 @@ class CalendarScreen extends StatelessWidget {
               Icons.settings_outlined,
               color: isDark ? Colors.white : const Color(0xFF1E232A),
             ),
-            tooltip: 'Pengaturan & Tampilan',
+            tooltip: AppStrings.settingsTitle(lang),
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.push(
@@ -112,7 +115,7 @@ class CalendarScreen extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
         ],
       ),
       body: Column(
@@ -141,28 +144,33 @@ class CalendarScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
                     children: [
                       _buildTimeTab(
-                        title: 'Kemarin',
+                        title: AppStrings.yesterday(lang),
                         isActive: calendar.selectedTab == QuickDateTab.yesterday,
+                        isDark: isDark,
                         onTap: () => calendar.setQuickTab(QuickDateTab.yesterday),
                       ),
                       _buildTimeTab(
-                        title: 'Hari Ini',
+                        title: AppStrings.today(lang),
                         isActive: calendar.selectedTab == QuickDateTab.today,
+                        isDark: isDark,
                         onTap: () => calendar.setQuickTab(QuickDateTab.today),
                       ),
                       _buildTimeTab(
-                        title: 'Besok',
+                        title: AppStrings.tomorrow(lang),
                         isActive: calendar.selectedTab == QuickDateTab.tomorrow,
+                        isDark: isDark,
                         onTap: () => calendar.setQuickTab(QuickDateTab.tomorrow),
                       ),
                       _buildTimeTab(
-                        title: 'Minggu Ini',
+                        title: AppStrings.thisWeek(lang),
                         isActive: calendar.selectedTab == QuickDateTab.thisWeek,
+                        isDark: isDark,
                         onTap: () => calendar.setQuickTab(QuickDateTab.thisWeek),
                       ),
                       _buildTimeTab(
-                        title: 'Minggu Depan',
+                        title: AppStrings.nextWeek(lang),
                         isActive: calendar.selectedTab == QuickDateTab.nextWeek,
+                        isDark: isDark,
                         onTap: () => calendar.setQuickTab(QuickDateTab.nextWeek),
                       ),
                     ],
@@ -171,13 +179,13 @@ class CalendarScreen extends StatelessWidget {
                 // Tombol Popup Kalender (Date Range Picker)
                 IconButton(
                   icon: const Icon(Icons.calendar_month, color: AppTheme.myfxOrange, size: 20),
-                  tooltip: 'Pilih Rentang Tanggal',
+                  tooltip: AppStrings.selectDateRange(lang),
                   onPressed: () async {
                     HapticFeedback.selectionClick();
                     final picked = await showDateRangePicker(
                       context: context,
-                      firstDate: DateTime.now().subtract(const Duration(days: 60)),
-                      lastDate: DateTime.now().add(const Duration(days: 60)),
+                      firstDate: DateTime.now().subtract(const Duration(days: 90)),
+                      lastDate: DateTime.now().add(const Duration(days: 90)),
                       initialDateRange: DateTimeRange(
                         start: DateTime.now(),
                         end: DateTime.now().add(const Duration(days: 3)),
@@ -198,7 +206,7 @@ class CalendarScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. Bar Penunjuk Tanggal Aktif ("Thursday, September 17, 2026 >")
+          // 2. Bar Penunjuk Tanggal Aktif (Multi-bahasa & adaptif)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
@@ -232,7 +240,7 @@ class CalendarScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      calendar.formattedActiveDateHeader,
+                      calendar.formattedActiveDateHeaderLocalized(lang),
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -273,10 +281,10 @@ class CalendarScreen extends StatelessWidget {
                               const Icon(Icons.event_busy, size: 52, color: Colors.grey),
                               const SizedBox(height: 12),
                               Text(
-                                'Tidak ada rilis berita ekonomi untuk filter ini.',
+                                AppStrings.noEvents(lang),
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  color: isDark ? Colors.grey[400] : const Color(0xFF424242),
                                 ),
                               ),
                             ],
@@ -325,6 +333,7 @@ class CalendarScreen extends StatelessWidget {
   Widget _buildTimeTab({
     required String title,
     required bool isActive,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -340,7 +349,9 @@ class CalendarScreen extends StatelessWidget {
           color: isActive ? AppTheme.myfxOrange : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? AppTheme.myfxOrange : const Color(0xFF38404D),
+            color: isActive
+                ? AppTheme.myfxOrange
+                : (isDark ? const Color(0xFF38404D) : const Color(0xFFCFD8DC)),
             width: 1,
           ),
           boxShadow: isActive
@@ -359,7 +370,9 @@ class CalendarScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 11.5,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: isActive ? Colors.black : const Color(0xFFB0B7C3),
+            color: isActive
+                ? Colors.black
+                : (isDark ? const Color(0xFFB0B7C3) : const Color(0xFF37474F)),
           ),
         ),
       ),

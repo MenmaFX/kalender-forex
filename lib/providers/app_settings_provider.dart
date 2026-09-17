@@ -141,6 +141,27 @@ class AppSettingsProvider with ChangeNotifier {
     }
   }
 
+  Future<void> setCroppedWallpaper({
+    required String filePath,
+    required bool isPortrait,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (isPortrait) {
+      _portraitWallpaperPath = filePath;
+      await prefs.setString('wallpaper_portrait_path', filePath);
+    } else {
+      _landscapeWallpaperPath = filePath;
+      await prefs.setString('wallpaper_landscape_path', filePath);
+    }
+
+    if (!hasCustomBackground) {
+      _themeModeOption = ThemeModeOption.darkGlassCustom;
+      await prefs.setInt('theme_mode_option_idx', _themeModeOption.index);
+    }
+
+    notifyListeners();
+  }
+
   Future<void> removeWallpaper({required bool isPortrait}) async {
     final prefs = await SharedPreferences.getInstance();
     if (isPortrait) {

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_settings_provider.dart';
@@ -51,7 +50,7 @@ class CustomBackgroundScaffold extends StatelessWidget {
           body: Stack(
             fit: StackFit.expand,
             children: [
-              // 1. Layer Background Image (Orientation Responsive Portrait/Landscape)
+              // 1. Layer Background Image murni jernih 100% (TANPA ImageFilter.blur & BackdropFilter)
               if (hasValidImageFile && activeImagePath != null) ...[
                 Image.file(
                   File(activeImagePath),
@@ -59,30 +58,27 @@ class CustomBackgroundScaffold extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                 ),
-                // 2. Layer Overlay Frosted & Tint agar teks tetap 100% kontras dan terbaca
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: isDark
-                            ? [
-                                const Color(0xCC0D0F13), // 80% Dark Tint
-                                const Color(0xE6121418), // 90% Dark Tint
-                              ]
-                            : [
-                                const Color(0xCCFFFFFF), // 80% Light Tint
-                                const Color(0xE6F4F6F9), // 90% Light Tint
-                              ],
-                      ),
+                // Lapisan tint gradien lembut agar elemen di atasnya tetap terbaca tanpa buram
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: isDark
+                          ? [
+                              const Color(0x660D0F13), // 40% subtle dark tint
+                              const Color(0x8A121418), // 54% subtle dark tint
+                            ]
+                          : [
+                              const Color(0x55FFFFFF), // 33% subtle light tint
+                              const Color(0x7AFFFFFF), // 48% subtle light tint
+                            ],
                     ),
                   ),
                 ),
               ],
 
-              // 3. Konten Aplikasi Utama
+              // 2. Konten Aplikasi Utama
               SafeArea(
                 bottom: false,
                 child: body,
@@ -95,7 +91,7 @@ class CustomBackgroundScaffold extends StatelessWidget {
   }
 }
 
-// Widget Glass Card dengan BackdropFilter Blur dan Border Halus
+// Widget Glass/Surface Card transparan dengan opacity ~0.85 (dark) dan ~0.90 (light) tanpa ImageFilter.blur
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -118,31 +114,40 @@ class GlassCard extends StatelessWidget {
     final isDark = settings.isDarkMode;
     final hasCustomBg = settings.hasCustomBackground;
 
+    // Opacity ~0.85 untuk Dark Mode (0xD9) dan ~0.90 untuk Light Mode (0xE6)
+    final Color cardBgColor = hasCustomBg
+        ? (isDark ? const Color(0xD9181B22) : const Color(0xE6FFFFFF))
+        : (isDark ? AppTheme.myfxCardDark : Colors.white);
+
+    // Border kontras tipis untuk ketajaman kartu
+    final Color borderColor = hasCustomBg
+        ? (isDark ? const Color(0x40FFFFFF) : const Color(0x33000000))
+        : (isDark ? const Color(0xFF262B33) : const Color(0xFFE2E6EC));
+
     final cardContent = Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: hasCustomBg
-            ? (isDark ? const Color(0xBF181B22) : const Color(0xCCFFFFFF))
-            : (isDark ? AppTheme.myfxCardDark : Colors.white),
+        color: cardBgColor,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: hasCustomBg
-              ? (isDark ? const Color(0x2EFFFFFF) : const Color(0x22000000))
-              : (isDark ? const Color(0xFF262B33) : const Color(0xFFE2E6EC)),
-          width: 0.8,
+          color: borderColor,
+          width: 0.9,
         ),
+        boxShadow: hasCustomBg
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: hasCustomBg ? 8.0 : 0.0,
-            sigmaY: hasCustomBg ? 8.0 : 0.0,
-          ),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(12.0),
-            child: child,
-          ),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(12.0),
+          child: child,
         ),
       ),
     );

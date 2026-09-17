@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/app_settings_provider.dart';
+import '../services/app_strings.dart';
 import '../widgets/app_theme.dart';
 
 class FilterDialog extends StatelessWidget {
@@ -12,11 +13,12 @@ class FilterDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = settings.isDarkMode;
+    final lang = settings.language;
 
     final impacts = [
-      {'name': 'High', 'label': 'Tinggi (Merah)', 'color': AppTheme.impactHigh},
-      {'name': 'Medium', 'label': 'Sedang (Oranye)', 'color': AppTheme.impactMedium},
-      {'name': 'Low', 'label': 'Rendah (Hijau)', 'color': AppTheme.impactLow},
+      {'name': 'High', 'label': AppStrings.impactHighLabel(lang), 'color': AppTheme.impactHigh},
+      {'name': 'Medium', 'label': AppStrings.impactMediumLabel(lang), 'color': AppTheme.impactMedium},
+      {'name': 'Low', 'label': AppStrings.impactLowLabel(lang), 'color': AppTheme.impactLow},
     ];
 
     final currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'];
@@ -29,8 +31,12 @@ class FilterDialog extends StatelessWidget {
           const Icon(Icons.tune_rounded, color: AppTheme.myfxOrange, size: 20),
           const SizedBox(width: 8),
           Text(
-            'Filter Kalender',
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+            AppStrings.filterTitle(lang),
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+            ),
           ),
         ],
       ),
@@ -40,8 +46,12 @@ class FilterDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Tingkat Dampak (Impact):',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+              '${AppStrings.impactLevel(lang)}:',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              ),
             ),
             const SizedBox(height: 6),
             ...impacts.map((item) {
@@ -64,7 +74,11 @@ class FilterDialog extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       label,
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                      ),
                     ),
                   ],
                 ),
@@ -81,8 +95,12 @@ class FilterDialog extends StatelessWidget {
             const SizedBox(height: 6),
 
             Text(
-              'Mata Uang (Currencies):',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+              '${AppStrings.currencies(lang)}:',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              ),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -96,11 +114,14 @@ class FilterDialog extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.black
+                          : (isDark ? Colors.white : const Color(0xFF212121)),
                     ),
                   ),
                   selected: isSelected,
-                  selectedColor: AppTheme.myfxOrange.withOpacity(0.35),
-                  checkmarkColor: AppTheme.myfxOrange,
+                  selectedColor: AppTheme.myfxOrange,
+                  checkmarkColor: Colors.black,
                   onSelected: (_) {
                     HapticFeedback.selectionClick();
                     settings.toggleCurrencyFilter(curr);
@@ -118,7 +139,7 @@ class FilterDialog extends StatelessWidget {
             Navigator.pop(context);
           },
           child: Text(
-            'Tutup',
+            AppStrings.close(lang),
             style: GoogleFonts.inter(color: AppTheme.myfxOrange, fontWeight: FontWeight.w700),
           ),
         ),
