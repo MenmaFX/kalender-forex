@@ -1,6 +1,0 @@
-package com.menmafx.calendar
-
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity: FlutterActivity() {
-}
