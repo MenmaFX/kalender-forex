@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,32 +83,15 @@ class AppSettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Pilih dan Potong Wallpaper Portrait (9:16)
-  Future<bool> pickAndCropPortraitWallpaper(BuildContext context) async {
-    return _pickAndCropWallpaper(
-      isPortrait: true,
-      ratioX: 9,
-      ratioY: 16,
-      context: context,
-    );
+  Future<bool> pickPortraitWallpaper() async {
+    return _pickWallpaper(isPortrait: true);
   }
 
-  // Pilih dan Potong Wallpaper Landscape (16:9)
-  Future<bool> pickAndCropLandscapeWallpaper(BuildContext context) async {
-    return _pickAndCropWallpaper(
-      isPortrait: false,
-      ratioX: 16,
-      ratioY: 9,
-      context: context,
-    );
+  Future<bool> pickLandscapeWallpaper() async {
+    return _pickWallpaper(isPortrait: false);
   }
 
-  Future<bool> _pickAndCropWallpaper({
-    required bool isPortrait,
-    required double ratioX,
-    required double ratioY,
-    required BuildContext context,
-  }) async {
+  Future<bool> _pickWallpaper({required bool isPortrait}) async {
     try {
       final picker = ImagePicker();
       final XFile? pickedFile = await picker.pickImage(
@@ -119,40 +101,13 @@ class AppSettingsProvider with ChangeNotifier {
 
       if (pickedFile == null) return false;
 
-      // Crop Manual dengan image_cropper terkunci rasio
-      final CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: CropAspectRatio(ratioX: ratioX, ratioY: ratioY),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: isPortrait
-                ? 'Potong Wallpaper Portrait (9:16)'
-                : 'Potong Wallpaper Landscape (16:9)',
-            toolbarColor: const Color(0xFF181B20),
-            toolbarWidgetColor: const Color(0xFFFFA500),
-            activeControlsWidgetColor: const Color(0xFFFFA500),
-            backgroundColor: const Color(0xFF121418),
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: true,
-            hideBottomControls: false,
-          ),
-          IOSUiSettings(
-            title: isPortrait ? 'Potong Wallpaper 9:16' : 'Potong Wallpaper 16:9',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-          ),
-        ],
-      );
-
-      if (croppedFile == null) return false;
-
-      // Simpan hasil crop permanen ke App Directory
+      // Simpan file wallpaper permanen ke App Directory
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = isPortrait ? 'wallpaper_portrait.jpg' : 'wallpaper_landscape.jpg';
       final savedImage = File('${appDir.path}/$fileName');
 
-      // Tulis ulang file jika sudah ada
-      final imageBytes = await croppedFile.readAsBytes();
+      // Tulis file gambar
+      final imageBytes = await pickedFile.readAsBytes();
       await savedImage.writeAsBytes(imageBytes);
 
       final prefs = await SharedPreferences.getInstance();
@@ -173,7 +128,7 @@ class AppSettingsProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('Error pick & crop image: $e');
+      debugPrint('Error pick wallpaper image: $e');
       return false;
     }
   }

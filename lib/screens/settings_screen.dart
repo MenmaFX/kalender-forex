@@ -98,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sesuaikan wallpaper latar belakang saat HP dalam orientasi tegak (Portrait 9:16) maupun miring (Landscape 16:9) dengan fitur potong/crop manual yang presisi.',
+                  'Pilih foto langsung dari galeri HP Anda. Aplikasi otomatis menyesuaikan gambar dengan rasio Portrait maupun Landscape menggunakan BoxFit.cover secara responsif.',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: isDark ? const Color(0xFFB0B7C3) : const Color(0xFF555F6D),
@@ -107,17 +107,18 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Baris Wallpaper Portrait (9:16)
+                // Baris Wallpaper Portrait (Rasio Tegak / Portrait)
                 _buildWallpaperPickerRow(
                   context: context,
-                  title: 'Wallpaper Portrait (Mode Tegak 9:16)',
+                  title: 'Wallpaper Portrait (Mode Tegak)',
+                  subtitle: 'Tampilan penuh otomatis (BoxFit.cover)',
                   imagePath: settings.portraitWallpaperPath,
                   onPick: () async {
-                    final success = await settings.pickAndCropPortraitWallpaper(context);
+                    final success = await settings.pickPortraitWallpaper();
                     if (success && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('✅ Wallpaper Portrait (9:16) berhasil dipasang!'),
+                          content: Text('✅ Wallpaper Portrait berhasil dipasang!'),
                           backgroundColor: Color(0xFF181B20),
                         ),
                       );
@@ -128,17 +129,18 @@ class SettingsScreen extends StatelessWidget {
 
                 const Divider(height: 24),
 
-                // Baris Wallpaper Landscape (16:9)
+                // Baris Wallpaper Landscape (Rasio Miring / Landscape)
                 _buildWallpaperPickerRow(
                   context: context,
-                  title: 'Wallpaper Landscape (Mode Miring 16:9)',
+                  title: 'Wallpaper Landscape (Mode Miring)',
+                  subtitle: 'Tampilan penuh otomatis (BoxFit.cover)',
                   imagePath: settings.landscapeWallpaperPath,
                   onPick: () async {
-                    final success = await settings.pickAndCropLandscapeWallpaper(context);
+                    final success = await settings.pickLandscapeWallpaper();
                     if (success && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('✅ Wallpaper Landscape (16:9) berhasil dipasang!'),
+                          content: Text('✅ Wallpaper Landscape berhasil dipasang!'),
                           backgroundColor: Color(0xFF181B20),
                         ),
                       );
@@ -315,6 +317,7 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildWallpaperPickerRow({
     required BuildContext context,
     required String title,
+    required String subtitle,
     required String? imagePath,
     required VoidCallback onPick,
     required VoidCallback onDelete,
@@ -354,6 +357,10 @@ class SettingsScreen extends StatelessWidget {
                 title,
                 style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
               ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+              ),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -365,8 +372,8 @@ class SettingsScreen extends StatelessWidget {
                       textStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                     onPressed: onPick,
-                    icon: const Icon(Icons.crop, size: 14),
-                    label: Text(hasImage ? 'Ganti' : 'Pilih & Potong'),
+                    icon: const Icon(Icons.photo_library_outlined, size: 14),
+                    label: Text(hasImage ? 'Ganti Foto' : 'Pilih Foto'),
                   ),
                   if (hasImage) ...[
                     const SizedBox(width: 8),
