@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
 import 'providers/calendar_provider.dart';
 import 'providers/app_settings_provider.dart';
 import 'services/notification_service.dart';
@@ -51,10 +52,7 @@ void main() async {
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF9E9E9E),
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 11),
               ),
             ],
           ),
@@ -104,9 +102,13 @@ class FxCalendarApp extends StatelessWidget {
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: settings.isDarkMode ? Brightness.light : Brightness.dark,
+            statusBarIconBrightness: settings.isDarkMode
+                ? Brightness.light
+                : Brightness.dark,
             systemNavigationBarColor: Colors.transparent,
-            systemNavigationBarIconBrightness: settings.isDarkMode ? Brightness.light : Brightness.dark,
+            systemNavigationBarIconBrightness: settings.isDarkMode
+                ? Brightness.light
+                : Brightness.dark,
           ),
         );
 
