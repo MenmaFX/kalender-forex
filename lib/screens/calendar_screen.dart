@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -271,9 +270,10 @@ class CalendarScreen extends StatelessWidget {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: calendar.isLoading
-                  ? CalendarShimmerLoading(isDark: isDark)
+                  ? CalendarShimmerLoading(key: const ValueKey('loading'), isDark: isDark)
                   : filteredEvents.isEmpty
                       ? Center(
+                          key: const ValueKey('empty'),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -290,6 +290,7 @@ class CalendarScreen extends StatelessWidget {
                           ),
                         )
                       : RefreshIndicator(
+                          key: const ValueKey('data_list'),
                           color: AppTheme.myfxOrange,
                           onRefresh: () async {
                             HapticFeedback.mediumImpact();

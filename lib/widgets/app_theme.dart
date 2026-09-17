@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -38,7 +39,6 @@ class AppTheme {
         primary: myfxOrange,
         secondary: myfxOrange,
         surface: myfxCardDark,
-        background: myfxDarkBg,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: myfxHeaderDark,
@@ -88,7 +88,6 @@ class AppTheme {
         primary: myfxOrange,
         secondary: myfxOrange,
         surface: Colors.white,
-        background: const Color(0xFFF4F6F9),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,

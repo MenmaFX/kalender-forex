@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 enum ImpactLevel { high, medium, low, holiday, unknown }
 
 enum SignalRecommendation {

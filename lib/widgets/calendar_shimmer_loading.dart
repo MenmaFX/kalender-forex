@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'app_theme.dart';
 
 class CalendarShimmerLoading extends StatelessWidget {
   final bool isDark;
