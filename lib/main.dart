@@ -13,14 +13,6 @@ void main() async {
   // 1. Pastikan binding widget diinisialisasi paling awal
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inisialisasi format tanggal lokal (Indonesia & Inggris) untuk intl DateFormat
-  try {
-    await initializeDateFormatting('id_ID', null);
-    await initializeDateFormatting('en_US', null);
-  } catch (e) {
-    debugPrint('Init date formatting error: $e');
-  }
-
   // Pasang custom ErrorWidget.builder agar jika terjadi error widget,
   // tidak menampilkan layar abu-abu mati (Grey Screen of Death) melainkan UI fallback yang rapi
   ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -60,6 +52,14 @@ void main() async {
       ),
     );
   };
+
+  // Inisialisasi format tanggal lokal (Indonesia & Inggris) untuk intl DateFormat
+  try {
+    await initializeDateFormatting('id_ID', null);
+    await initializeDateFormatting('en_US', null);
+  } catch (e) {
+    debugPrint('Init date formatting error: $e');
+  }
 
   // Konfigurasi Status Bar & Navigation Bar Android Transparan / Edge-to-Edge
   SystemChrome.setSystemUIOverlayStyle(
