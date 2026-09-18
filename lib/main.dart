@@ -15,43 +15,7 @@ void main() async {
 
   // Pasang custom ErrorWidget.builder agar jika terjadi error widget,
   // tidak menampilkan layar abu-abu mati (Grey Screen of Death) melainkan UI fallback yang rapi
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Material(
-      color: const Color(0xFF121418),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline_rounded,
-                color: AppTheme.myfxOrange,
-                size: 48,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Memuat Tampilan...',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                details.exceptionAsString(),
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 11),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  };
+  
 
   // Inisialisasi format tanggal lokal (Indonesia & Inggris) untuk intl DateFormat
   try {
