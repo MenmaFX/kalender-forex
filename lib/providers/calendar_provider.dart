@@ -45,6 +45,11 @@ class CalendarProvider with ChangeNotifier {
     }
   }
 
+  // Alias untuk kompatibilitas nama pemanggilan method
+  Future<void> fetchEvents() => loadEvents();
+  Future<void> getEvents() => loadEvents();
+  Future<void> refresh() => loadEvents();
+
   void setQuickTab(QuickDateTab tab) {
     _selectedTab = tab;
     final now = DateTime.now();

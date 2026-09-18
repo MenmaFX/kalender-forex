@@ -15,6 +15,7 @@ void main() async {
 
   // Pasang custom ErrorWidget.builder agar jika terjadi error widget,
   // tidak menampilkan layar abu-abu mati (Grey Screen of Death) melainkan UI fallback yang rapi
+  ErrorWidget.builder = (FlutterErrorDetails details) {
     return Material(
       color: const Color(0xFF121418),
       child: Center(
