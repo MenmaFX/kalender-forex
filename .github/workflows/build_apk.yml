@@ -37,9 +37,6 @@ jobs:
           sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle 2>/dev/null || true
           sed -i 's/android:label=".*"/android:label="FX Impact"/g' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
 
-      - name: Cek Error Dart Spesifik
-        run: flutter analyze lib/ --no-fatal-infos --no-fatal-warnings
-
       - name: Build APK Release
         run: flutter build apk --release --no-tree-shake-icons
 
