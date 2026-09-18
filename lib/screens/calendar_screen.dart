@@ -6,7 +6,6 @@ import '../providers/calendar_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_theme.dart';
-import '../widgets/calendar_shimmer_loading.dart';
 import '../widgets/custom_background_scaffold.dart';
 import '../widgets/event_card_widget.dart';
 import '../widgets/filter_dialog.dart';
@@ -18,36 +17,8 @@ class CalendarScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Null safety & defensive provider lookup
-    CalendarProvider? calendar;
-    AppSettingsProvider? settings;
-
-    try {
-      calendar = Provider.of<CalendarProvider>(context);
-      settings = Provider.of<AppSettingsProvider>(context);
-    } catch (e) {
-      debugPrint('Error accessing providers in CalendarScreen: $e');
-    }
-
-    // Jika provider belum siap atau data null, tampilkan indikator loading aman bukan grey screen
-    if (calendar == null || settings == null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF121418),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              CircularProgressIndicator(color: AppTheme.myfxOrange),
-              SizedBox(height: 16),
-              Text(
-                'Menyiapkan Kalender...',
-                style: TextStyle(color: Colors.white, fontSize: 13),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    final calendar = Provider.of<CalendarProvider>(context);
+    final settings = Provider.of<AppSettingsProvider>(context);
 
     final isDark = settings.isDarkMode;
     final hasCustomBg = settings.hasCustomBackground;
@@ -300,7 +271,10 @@ class CalendarScreen extends StatelessWidget {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: calendar.isLoading
-                  ? CalendarShimmerLoading(key: const ValueKey('loading'), isDark: isDark)
+                  ? const Center(
+                      key: ValueKey('loading'),
+                      child: CircularProgressIndicator(color: AppTheme.myfxOrange),
+                    )
                   : filteredEvents.isEmpty
                       ? Center(
                           key: const ValueKey('empty'),
