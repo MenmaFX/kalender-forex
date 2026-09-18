@@ -25,7 +25,7 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
 
-      - name: Buat Ulang Android Bersih
+      - name: Buat Lingkungan Android
         run: |
           rm -rf test/
           rm -rf android/
@@ -38,7 +38,7 @@ jobs:
           sed -i 's/android:label=".*"/android:label="FX Impact"/g' android/app/src/main/AndroidManifest.xml 2>/dev/null || true
 
       - name: Build APK Release
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release --no-tree-shake-icons --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
