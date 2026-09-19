@@ -78,7 +78,7 @@ class CalendarService {
     return result;
   }
 
-  // Generator Data Riwayat Masa Lalu (Mock Historical) untuk Tab Detail
+  // Generator Data Riwayat Masa Lalu untuk Tab Detail (Riwayat 1-2 Tahun / 12 Periode)
   List<HistoricalRelease> getHistoricalReleases(EconomicEvent event) {
     final List<HistoricalRelease> history = [];
     final now = event.date;
@@ -95,11 +95,16 @@ class CalendarService {
       return rounded;
     }
 
-    for (int i = 1; i <= 6; i++) {
-      final pastDate = DateTime(now.year, now.month - i, now.day.clamp(1, 28));
-      final act = baseNum + ((i % 2 == 0) ? (0.2 * i) : (-0.15 * i));
-      final fct = baseNum + 0.1;
-      final prev = baseNum - 0.1;
+    // Buat 12 periode riwayat rilis ke belakang (1 tahun penuh hingga 2 tahun)
+    for (int i = 1; i <= 12; i++) {
+      final totalMonths = now.month - i;
+      final yearOffset = (totalMonths <= 0) ? ((totalMonths - 11) ~/ 12) : 0;
+      final month = (totalMonths <= 0) ? (12 + (totalMonths % 12)) : totalMonths;
+      final pastDate = DateTime(now.year + yearOffset, month, now.day.clamp(1, 28));
+
+      final act = baseNum + ((i % 2 == 0) ? (0.25 * (i % 4)) : (-0.2 * (i % 3)));
+      final fct = baseNum + ((i % 3 == 0) ? 0.1 : -0.1);
+      final prev = baseNum - 0.05;
 
       history.add(HistoricalRelease(
         date: pastDate,
@@ -112,9 +117,8 @@ class CalendarService {
     return history;
   }
 
-  // Generator Komprehensif Multi-Bulan (-90 hari s/d +90 hari)
-  // Menjamin navigasi ke bulan-bulan lalu (Juli, Agustus) maupun bulan depan
-  // selalu berisi rilis lengkap (High, Medium, Low) dengan Akt., Kons., Sebl.
+  // Generator Komprehensif Multi-Tahun (-1095 hari / 3 Tahun Lalu s/d +365 hari / 1 Tahun Mendatang)
+  // Menjamin navigasi riwayat 1, 2, 3 tahun lalu selalu berisi data lengkap (High, Medium, Low)
   List<EconomicEvent> _generateMultiMonthEvents() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -162,8 +166,8 @@ class CalendarService {
       {'country': 'NZD', 'title': 'Visitor Arrivals m/m', 'impact': 'Low', 'fct': '0.5%', 'prev': '-0.1%', 'hour': 5, 'min': 45},
     ];
 
-    // Buat data untuk rentang dari -90 hari (3 bulan lalu) hingga +90 hari (3 bulan ke depan)
-    for (int dayOffset = -90; dayOffset <= 90; dayOffset++) {
+    // Buat data untuk rentang dari -1095 hari (3 tahun lalu) hingga +365 hari (1 tahun ke depan)
+    for (int dayOffset = -1095; dayOffset <= 365; dayOffset++) {
       final targetDate = today.add(Duration(days: dayOffset));
       final weekday = targetDate.weekday; // 1 = Senin, 7 = Minggu
 

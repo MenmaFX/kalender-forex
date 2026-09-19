@@ -13,10 +13,6 @@ void main() async {
   // 1. Pastikan binding widget diinisialisasi paling awal
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Pasang custom ErrorWidget.builder agar jika terjadi error widget,
-  // tidak menampilkan layar abu-abu mati (Grey Screen of Death) melainkan UI fallback yang rapi
-  
-
   // Inisialisasi format tanggal lokal (Indonesia & Inggris) untuk intl DateFormat
   try {
     await initializeDateFormatting('id_ID', null);
@@ -25,7 +21,10 @@ void main() async {
     debugPrint('Init date formatting error: $e');
   }
 
-  // Konfigurasi Status Bar & Navigation Bar Android Transparan / Edge-to-Edge
+  // 2. Aktifkan Edge-to-Edge murni di level window Android
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  // Default Overlay Style awal (sebelum Provider aktif)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -62,27 +61,32 @@ class FxCalendarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppSettingsProvider>(
       builder: (context, settings, child) {
-        // Update status bar icons sesuai kecerahan tema aktif
-        SystemChrome.setSystemUIOverlayStyle(
-          SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: settings.isDarkMode
-                ? Brightness.light
-                : Brightness.dark,
-            systemNavigationBarColor: Colors.transparent,
-            systemNavigationBarIconBrightness: settings.isDarkMode
-                ? Brightness.light
-                : Brightness.dark,
-          ),
+        final isDark = settings.isDarkMode;
+
+        // Kontrol penuh ikon status bar & tombol/garis navigasi:
+        // Di Mode Gelap: ikon bar atas dan tombol navigasi bawah = PUTIH (Brightness.light)
+        // Di Mode Terang: ikon bar atas dan tombol navigasi bawah = HITAM (Brightness.dark)
+        final overlayStyle = SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          systemNavigationBarDividerColor: Colors.transparent,
         );
 
-        return MaterialApp(
-          title: 'FX Impact',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          home: const SplashScreen(),
+        SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: overlayStyle,
+          child: MaterialApp(
+            title: 'FX Impact',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+            home: const SplashScreen(),
+          ),
         );
       },
     );

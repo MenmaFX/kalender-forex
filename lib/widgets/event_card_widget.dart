@@ -198,21 +198,27 @@ class EventCardWidget extends StatelessWidget {
                       // Kolom Angka Tabular (Akt, Kons, Sebl)
                       Row(
                         children: [
-                          _buildMetric(
-                            label: AppStrings.actualLabel(lang),
-                            value: event.actual.isEmpty ? '-' : event.actual,
-                            textColor: event.actual.isEmpty ? null : _getActualTextColor(isDark),
-                            isBold: true,
+                          Flexible(
+                            child: _buildMetric(
+                              label: AppStrings.actualLabel(lang),
+                              value: event.actual.isEmpty ? '-' : event.actual,
+                              textColor: event.actual.isEmpty ? null : _getActualTextColor(isDark),
+                              isBold: true,
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          _buildMetric(
-                            label: AppStrings.forecastLabel(lang),
-                            value: event.forecast.isEmpty ? '-' : event.forecast,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: _buildMetric(
+                              label: AppStrings.forecastLabel(lang),
+                              value: event.forecast.isEmpty ? '-' : event.forecast,
+                            ),
                           ),
-                          const SizedBox(width: 12),
-                          _buildMetric(
-                            label: AppStrings.previousLabel(lang),
-                            value: event.previous.isEmpty ? '-' : event.previous,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: _buildMetric(
+                              label: AppStrings.previousLabel(lang),
+                              value: event.previous.isEmpty ? '-' : event.previous,
+                            ),
                           ),
                         ],
                       ),
@@ -222,7 +228,7 @@ class EventCardWidget extends StatelessWidget {
 
                 // Badge Sinyal (BUY/SELL Currency/Gold & Proyeksi Event Mendatang)
                 if (event.signalBadgeText != null) ...[
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   _buildSignalBadge(event, lang),
                 ],
               ],
@@ -244,6 +250,8 @@ class EventCardWidget extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: GoogleFonts.inter(
             fontSize: 10,
             color: const Color(0xFF888E9B),
@@ -251,12 +259,16 @@ class EventCardWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 3),
-        Text(
-          value,
-          style: AppTheme.tabularFigures(
-            fontSize: 11,
-            fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-            color: textColor ?? const Color(0xFFB0B7C3),
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTheme.tabularFigures(
+              fontSize: 11,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+              color: textColor ?? const Color(0xFFB0B7C3),
+            ),
           ),
         ),
       ],
@@ -274,52 +286,52 @@ class EventCardWidget extends StatelessWidget {
     switch (type) {
       case SignalType.buyGold:
       case SignalType.buyCurrency:
-        bgColor = const Color(0x2E00E676);
-        borderColor = const Color(0xFF00E676);
-        textColor = const Color(0xFF00E676);
+        bgColor = const Color(0x1F00C853);
+        borderColor = const Color(0x4D00C853);
+        textColor = const Color(0xFF00C853);
         break;
       case SignalType.sellGold:
       case SignalType.sellCurrency:
-        bgColor = const Color(0x2EFF1744);
-        borderColor = const Color(0xFFFF1744);
-        textColor = const Color(0xFFFF5252);
+        bgColor = const Color(0x1FD50000);
+        borderColor = const Color(0x4DD50000);
+        textColor = const Color(0xFFE53935);
         break;
       case SignalType.projectedBuy:
-        bgColor = const Color(0x2400E676);
-        borderColor = const Color(0x8800E676);
-        textColor = const Color(0xFF69F0AE);
+        bgColor = const Color(0x1400C853);
+        borderColor = const Color(0x2B00C853);
+        textColor = const Color(0xFF43A047);
         break;
       case SignalType.projectedSell:
-        bgColor = const Color(0x24FF5252);
-        borderColor = const Color(0x88FF5252);
-        textColor = const Color(0xFFFF8A80);
+        bgColor = const Color(0x14D50000);
+        borderColor = const Color(0x2BD50000);
+        textColor = const Color(0xFFE57373);
         break;
       case SignalType.neutral:
-        bgColor = const Color(0x229E9E9E);
-        borderColor = const Color(0x669E9E9E);
-        textColor = const Color(0xFFBDBDBD);
+        bgColor = const Color(0x1A9E9E9E);
+        borderColor = const Color(0x339E9E9E);
+        textColor = const Color(0xFF9E9E9E);
         break;
       case SignalType.none:
-        bgColor = const Color(0x22FFA500);
-        borderColor = const Color(0x66FFA500);
+        bgColor = const Color(0x1AFFA500);
+        borderColor = const Color(0x33FFA500);
         textColor = AppTheme.myfxOrange;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3.5),
+      padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 3),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: borderColor, width: 0.8),
+        border: Border.all(color: borderColor, width: 0.6),
       ),
       child: Text(
         text ?? '',
         style: GoogleFonts.inter(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
+          fontSize: 8.8,
+          fontWeight: FontWeight.w700,
           color: textColor,
-          letterSpacing: 0.3,
+          letterSpacing: 0.2,
         ),
       ),
     );

@@ -1,89 +1,103 @@
-# 📈 Kalender Ekonomi & Sinyal Forex/Kripto (Myfxbook 1:1 Professional Edition)
+# 📅 Kalender Forex (FX Impact)
 
-Aplikasi mobile Flutter berstandar tinggi yang meniru persis estetika **Myfxbook** dengan UI organik, tipografi finansial tabular, efek *Frosted Glassmorphism*, serta dukungan penuh **Custom Background (Portrait 9:16 & Landscape 16:9)** dengan pemotong manual (manual crop).
-
----
-
-## 💎 Fitur & Peningkatan Versi Terbaru
-
-### 1. Konfigurasi Android SDK Mutakhir
-- **`minSdkVersion: 21`** (Android 5.0 Lollipop) – Menjamin kompatibilitas dengan ponsel lama tanpa kendala.
-- **`compileSdkVersion` & `targetSdkVersion: 34`** – Mendukung arsitektur Android 14+ secara optimal.
-- **Izin Lengkap & Penyimpanan Warisan (`requestLegacyExternalStorage="true"`)**:
-  - `READ_EXTERNAL_STORAGE` & `WRITE_EXTERNAL_STORAGE` (Android 12 kebawah).
-  - `READ_MEDIA_IMAGES` (Android 13+).
-  - `POST_NOTIFICATIONS` & `VIBRATE`.
-  - Registrasi activity bawaan crop foto: `com.yalantis.ucrop.UCropActivity`.
-
-### 2. UI/UX Organik & Bebas Kesan Kaku (Human-Crafted Feel)
-- **Tipografi Finansial Modern**:
-  - Menggunakan font **Google Fonts: Inter** untuk judul dan narasi edukasi.
-  - Menggunakan font **Google Fonts: JetBrains Mono** dengan fitur **Tabular Figures** (`FontFeature.tabularFigures()`) untuk seluruh metrik angka (Aktual, Konsensus, Sebelumnya), sehingga tanda desimal dan angka selalu rata vertikal sempurna (*monospaced tabular alignment*).
-- **Efek Glassmorphism / Frosted Glass**:
-  - Implementasi komponen `GlassCard` dan `CustomBackgroundScaffold` dengan `BackdropFilter` (blur 6–8px) dan border semi-transparan tipis.
-  - Teks, angka rilis, dan indikator pasar tetap memiliki kontras 100% terbaca dengan jelas di atas foto wallpaper apapun berkat *adaptive gradient tint layer*.
-- **Micro-Interactions & Haptic**:
-  - Sentuhan kartu berita, navigasi tab hari, dan filter dilengkapi getaran haptic feedback halus (`HapticFeedback.selectionClick()` dan `HapticFeedback.lightImpact()`).
-  - Animasi transisi layar halus dengan `FadeTransition` dan `AnimatedSwitcher`.
-- **Shimmer Loading Animation**:
-  - Menggantikan spinner generik dengan animasi skeleton loader shimmer (`shimmer: ^3.0.0`) saat memuat data kalender ekonomi.
-- **Edge-to-Edge System Bar**:
-  - Status bar dan tombol navigasi sistem Android transparan mengikuti mode terang/gelap secara dinamis.
-
-### 3. Fitur Custom Wallpaper Galeri (Portrait 9:16 & Landscape 16:9)
-- **Opsi 4 Mode Tema di Halaman Settings**:
-  1. *Mode Gelap Default (Dark Theme)* (#121418 khas Myfxbook)
-  2. *Mode Terang Default (Light Theme)*
-  3. *Mode Gelap dengan Custom Background (Dark Glass)*
-  4. *Mode Terang dengan Custom Background (Light Glass)*
-- **Manual Crop Terkunci Rasio**:
-  - Pemilihan wallpaper portrait otomatis membuka UI pemotong manual yang terkunci pada rasio **9:16**.
-  - Pemilihan wallpaper landscape otomatis membuka UI pemotong manual yang terkunci pada rasio **16:9**.
-  - Foto hasil potong disimpan secara lokal di internal storage aplikasi dan tersimpan persisten via `SharedPreferences`.
-- **Orientation Responsiveness (`OrientationBuilder`)**:
-  - Saat posisi ponsel **Portrait**, aplikasi otomatis menampilkan wallpaper portrait (`BoxFit.cover`).
-  - Saat ponsel diputar ke **Landscape**, background otomatis beralih ke wallpaper landscape (`BoxFit.cover`).
+Aplikasi kalender ekonomi dan berita forex berbasis Flutter dengan analisis proyeksi instrumen pasar yang dirancang untuk trader valuta asing (Forex), komoditas (Emas/XAU), dan kripto (Bitcoin/BTC).
 
 ---
 
-## 📁 Struktur Berkas Proyek
-```
-fx_calendar_app/
-├── android/
-│   └── app/
-│       ├── build.gradle                   # minSdkVersion 21, compile/targetSdkVersion 34
-│       └── src/main/
-│           ├── AndroidManifest.xml        # Izin galeri, notifikasi, legacy storage & UCropActivity
-│           └── res/values/styles.xml      # Tema launch & normal
-├── lib/
-│   ├── main.dart                          # Edge-to-edge transparent system bar & inisialisasi
-│   ├── models/
-│   │   └── economic_event.dart            # Model event, komparasi rilis & sinyal XAU/BTC
-│   ├── services/
-│   │   ├── calendar_service.dart          # REST fetch, caching, fallback mock riwayat
-│   │   └── notification_service.dart      # flutter_local_notifications & dispatch sinyal
-│   ├── providers/
-│   │   ├── calendar_provider.dart         # State kalender & filter tanggal
-│   │   └── app_settings_provider.dart     # State 4 mode tema & crop/pick wallpaper galeri
-│   ├── screens/
-│   │   ├── main_navigation_screen.dart    # Bottom nav bar dengan CustomBackgroundScaffold
-│   │   ├── calendar_screen.dart           # Feed berita 1:1 Myfxbook dengan Shimmer Loading
-│   │   ├── event_detail_screen.dart       # Detail berita, analisa XAU/BTC & tren riwayat
-│   │   └── settings_screen.dart           # Pengaturan wallpaper 9:16 / 16:9 & glosarium
-│   └── widgets/
-│       ├── app_theme.dart                 # GoogleFonts Inter & JetBrainsMono Tabular Figures
-│       ├── custom_background_scaffold.dart# OrientationBuilder & Frosted GlassCard
-│       ├── event_card_widget.dart         # Baris berita dengan haptic & strip warna
-│       ├── calendar_shimmer_loading.dart  # Skeleton loading elegan
-│       └── filter_dialog.dart             # Dialog filter dampak & mata uang
-└── pubspec.yaml                           # Dependensi resmi (image_picker, image_cropper, shimmer, dll)
-```
+## ✨ Fitur Utama
+
+- **📊 Kalender Ekonomi Real-time**: Memantau jadwal rilis berita ekonomi global (High, Medium, Low impact) langsung secara berkala dengan status live.
+- **🔍 Filter Fleksibel & Terarah**:
+  - Filter rentang waktu: Kemarin, Hari Ini, Besok, Minggu Ini, Minggu Depan, hingga Custom Date Range.
+  - Filter tingkat dampak (*High, Medium, Low*).
+  - Filter mata uang utama (*USD, EUR, GBP, JPY, AUD, CAD, CHF, NZD*).
+- **🎨 Dark Mode & Clean Theme**: Tampilan antarmuka bernuansa fintech profesional, bersih, elegan, dan tanpa artefak warna yang mengganggu.
+- **🖼️ Custom Wallpaper Cropper (Pemotong & Penyesuaian Foto Latar)**:
+  - Dukungan wallpaper latar transparan (*Frosted Glassmorphism*) baik orientasi *Portrait* (9:16) maupun *Landscape* (16:9).
+  - Interaksi *pinch-to-zoom* dan *panning* yang halus, mulus, dan terkunci rapi di dalam batas pemotongan.
+- **⚡ Proyeksi Fundamental & Sinyal Pasar**: Memberikan edukasi probabilitas arah pergerakan Dolar AS, Emas (XAU/USD), dan Bitcoin (BTC/USD) pasca rilis data.
+- **🔔 Notifikasi & Pengingat Cerdas**:
+  - Pengingat pra-rilis (5, 15, atau 30 menit sebelum berita keluar).
+  - Khusus hanya memicu pengingat untuk berita yang belum rilis / masa mendatang.
+  - Filter notifikasi independen per dampak dan per mata uang.
+  - Pengaturan suara & getaran yang fleksibel.
+- **✨ Animasi Splash Screen Estetik**: Tampilan pembuka yang halus dan elegan dengan branding *"Aplikasi By MenmaFX"*.
 
 ---
 
-## 🚀 Menjalankan Proyek
+## 🛠️ Tech Stack & Requirements
+
+- **Framework**: [Flutter](https://flutter.dev/) (v3.19+ / v3.32+ recommended)
+- **Language**: [Dart](https://dart.dev/)
+- **State Management**: [Provider](https://pub.dev/packages/provider)
+- **Java Development Kit**: JDK 17
+- **Build Tool**: Gradle 8.x (Android Gradle Plugin 8.x)
+- **Target Platform**: Android (minSdkVersion 21, targetSdkVersion 34) & iOS
+
+---
+
+## 🚀 Panduan Instalasi & Menjalankan Aplikasi
+
+Pastikan Flutter SDK dan Android Studio / VS Code sudah terpasang di perangkat Anda.
+
+### 1. Kloning Repositori
 ```bash
-cd /data/data/com.termux/files/home/fx_calendar_app
+git clone https://github.com/MenmaFX/kalender-forex.git
+cd kalender-forex
+```
+
+### 2. Pasang Dependensi
+Unduh seluruh package yang diperlukan:
+```bash
 flutter pub get
+```
+
+### 3. Jalankan Aplikasi di Perangkat / Emulator
+Pastikan perangkat Android / emulator sudah tersambung:
+```bash
 flutter run
 ```
+
+### 4. Build APK Rilis (Opsional)
+Untuk mengompilasi file APK siap pasang (release):
+```bash
+flutter build apk --release
+```
+File APK yang dihasilkan akan berada di:
+`build/app/outputs/flutter-apk/app-release.apk`
+
+---
+
+## 📂 Struktur Proyek
+
+```text
+lib/
+├── main.dart                      # Titik awal aplikasi & inisialisasi provider
+├── models/
+│   └── economic_event.dart        # Model data rilis ekonomi & kalkulasi sinyal
+├── providers/
+│   ├── app_settings_provider.dart # Pengaturan tema, wallpaper, dan filter notifikasi
+│   └── calendar_provider.dart     # Manajemen event kalender & alert waktu nyata
+├── screens/
+│   ├── splash_screen.dart         # Layar animasi pembuka
+│   ├── calendar_screen.dart       # Layar utama kalender ekonomi & tab navigasi
+│   ├── event_detail_screen.dart   # Detail rilis, riwayat grafik, & analisis sinyal
+│   ├── crop_screen.dart           # Pemotong interaktif wallpaper background
+│   └── settings_screen.dart       # Pengaturan preferensi, bahasa, & notifikasi
+├── services/
+│   ├── calendar_service.dart      # Pengambilan data event ekonomi
+│   ├── notification_service.dart  # Layanan notifikasi lokal Android
+│   └── app_strings.dart           # Lokalisasi multibahasa (ID / EN)
+└── widgets/
+    ├── app_theme.dart             # Tema warna fintech gelap & terang
+    ├── custom_background_scaffold.dart # Scaffold pendukung frosted glass background
+    ├── event_card_widget.dart     # Kartu baris data ekonomi
+    └── filter_dialog.dart         # Dialog modal filter mata uang & dampak
+```
+
+---
+
+## 📄 Lisensi & Kredit
+
+Dikembangkan dengan dedikasi untuk komunitas trader.  
+**Aplikasi By MenmaFX**

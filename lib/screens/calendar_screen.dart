@@ -35,6 +35,8 @@ class CalendarScreen extends StatelessWidget {
         backgroundColor: hasCustomBg
             ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
             : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         titleSpacing: 14,
         title: Row(
@@ -70,6 +72,38 @@ class CalendarScreen extends StatelessWidget {
                 fontSize: 16.5,
                 letterSpacing: -0.2,
                 color: isDark ? Colors.white : const Color(0xFF1E232A),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: const Color(0x2200E676),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0x6600E676), width: 0.8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF00E676),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 3.5),
+                  Text(
+                    'LIVE',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF00E676),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -184,8 +218,8 @@ class CalendarScreen extends StatelessWidget {
                     HapticFeedback.selectionClick();
                     final picked = await showDateRangePicker(
                       context: context,
-                      firstDate: DateTime.now().subtract(const Duration(days: 90)),
-                      lastDate: DateTime.now().add(const Duration(days: 90)),
+                      firstDate: DateTime.now().subtract(const Duration(days: 1095)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
                       initialDateRange: DateTimeRange(
                         start: DateTime.now(),
                         end: DateTime.now().add(const Duration(days: 3)),
@@ -339,43 +373,35 @@ class CalendarScreen extends StatelessWidget {
     required bool isDark,
     required VoidCallback onTap,
   }) {
+    final activeBg = isDark ? AppTheme.myfxOrange : const Color(0xFF1E232A);
+    final activeText = isDark ? Colors.black : Colors.white;
+    final inactiveBorder = isDark ? const Color(0xFF2A2E37) : const Color(0xFFE2E6EC);
+    final inactiveText = isDark ? const Color(0xFF98A2B3) : const Color(0xFF475467);
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
         onTap();
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5.5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.myfxOrange : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          color: isActive ? activeBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isActive
-                ? AppTheme.myfxOrange
-                : (isDark ? const Color(0xFF38404D) : const Color(0xFFCFD8DC)),
+            color: isActive ? activeBg : inactiveBorder,
             width: 1,
           ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppTheme.myfxOrange.withOpacity(0.35),
-                    blurRadius: 6,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
         ),
         alignment: Alignment.center,
         child: Text(
           title,
           style: GoogleFonts.inter(
-            fontSize: 11.5,
+            fontSize: 12,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: isActive
-                ? Colors.black
-                : (isDark ? const Color(0xFFB0B7C3) : const Color(0xFF37474F)),
+            color: isActive ? activeText : inactiveText,
           ),
         ),
       ),

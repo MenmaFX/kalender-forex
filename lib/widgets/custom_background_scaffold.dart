@@ -51,7 +51,7 @@ class CustomBackgroundScaffold extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // 1. Layer Background Image murni jernih 100% (TANPA ImageFilter.blur & BackdropFilter)
-              if (hasValidImageFile && activeImagePath != null) ...[
+              if (hasValidImageFile) ...[
                 Image.file(
                   File(activeImagePath),
                   fit: BoxFit.cover,

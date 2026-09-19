@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/economic_event.dart';
 import '../services/calendar_service.dart';
 import '../services/notification_service.dart';
@@ -9,6 +11,7 @@ enum QuickDateTab { yesterday, today, tomorrow, thisWeek, nextWeek, custom }
 class CalendarProvider with ChangeNotifier {
   final CalendarService _service = CalendarService();
   final NotificationService _notificationService = NotificationService();
+  Timer? _realtimeTimer;
 
   List<EconomicEvent> _events = [];
   bool _isLoading = false;
@@ -25,8 +28,82 @@ class CalendarProvider with ChangeNotifier {
   DateTime get selectedDate => _selectedDate;
   DateTimeRange? get customDateRange => _customDateRange;
 
+  final Set<int> _notifiedEventIds = {};
+
   CalendarProvider() {
     loadEvents();
+    // Real-time automatic background polling every 30 seconds for live releases & alerts
+    _realtimeTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      _checkAndDispatchRealtimeAlerts();
+      _silentRefresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    _realtimeTimer?.cancel();
+    super.dispose();
+  }
+
+  // Monitor waktu nyata: membunyikan notifikasi otomatis pra-rilis & sinyal rilis saat waktu tiba
+  Future<void> _checkAndDispatchRealtimeAlerts() async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+
+    final notifImpacts = (prefs.getStringList('notif_impact_filters') ?? ['High', 'Medium', 'Low']).toSet();
+    final notifCurrencies = (prefs.getStringList('notif_currency_filters') ?? ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD']).toSet();
+    final soundEnabled = prefs.getBool('notif_sound_enabled') ?? true;
+    final vibrationEnabled = prefs.getBool('notif_vibration_enabled') ?? true;
+
+    for (final event in _events) {
+      final currency = event.country.toUpperCase();
+      final impact = event.impact;
+
+      // Cek apakah mata uang atau impact masuk dalam filter notifikasi aktif
+      if (!notifCurrencies.contains(currency)) continue;
+      if (!notifImpacts.contains(impact)) continue;
+
+      final diffMinutes = event.date.difference(now).inMinutes;
+
+      // 1. Notifikasi Pra-Rilis Otomatis:
+      // Hanya kirim jika berita belum keluar (actual kosong) dan jadwalnya masih di masa depan
+      if (event.actual.isEmpty && event.date.isAfter(now) && diffMinutes >= 0 && diffMinutes <= 15) {
+        final alertKey = event.title.hashCode ^ event.date.day;
+        if (!_notifiedEventIds.contains(alertKey)) {
+          _notifiedEventIds.add(alertKey);
+          await _notificationService.schedulePreReleaseReminder(
+            event: event,
+            minutesBefore: diffMinutes == 0 ? 1 : diffMinutes,
+            soundEnabled: soundEnabled,
+            vibrationEnabled: vibrationEnabled,
+          );
+        }
+      }
+
+      // 2. Notifikasi Sinyal Pasca-Rilis Otomatis (ketika aktual terisi dan rilis baru saja terjadi)
+      if (event.actual.isNotEmpty) {
+        final signalKey = (event.title + '_signal').hashCode ^ event.date.day;
+        if (!_notifiedEventIds.contains(signalKey)) {
+          _notifiedEventIds.add(signalKey);
+          await _notificationService.sendPostReleaseSignal(
+            event: event,
+            soundEnabled: soundEnabled,
+            vibrationEnabled: vibrationEnabled,
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _silentRefresh() async {
+    try {
+      final updated = await _service.fetchCalendarEvents();
+      if (updated.isNotEmpty) {
+        updated.sort((a, b) => a.date.compareTo(b.date));
+        _events = updated;
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   Future<void> loadEvents() async {
@@ -154,8 +231,8 @@ class CalendarProvider with ChangeNotifier {
   }
 
   // Pemicu Notifikasi Sinyal Emas / Kripto
-  Future<void> triggerSignalAlert(EconomicEvent event) async {
-    await _notificationService.sendPostReleaseSignal(event: event);
+  Future<void> triggerSignalAlert(EconomicEvent event, {bool isSimulation = false}) async {
+    await _notificationService.sendPostReleaseSignal(event: event, isSimulation: isSimulation);
   }
 
   // Riwayat Masa Lalu

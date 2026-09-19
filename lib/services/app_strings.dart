@@ -105,7 +105,7 @@ class AppStrings {
   static String darkDefaultTitle(String lang) =>
       lang == 'en' ? 'Default Dark Mode (Dark Theme)' : 'Mode Gelap Default (Dark Theme)';
   static String darkDefaultDesc(String lang) =>
-      lang == 'en' ? 'Elegant dark theme (#121418)' : 'Tema gelap khas Myfxbook (#121418)';
+      lang == 'en' ? 'Clean & elegant dark theme (#101216)' : 'Tema gelap elegan dan bersih (#101216)';
   static String lightDefaultTitle(String lang) =>
       lang == 'en' ? 'Default Light Mode (Light Theme)' : 'Mode Terang Default (Light Theme)';
   static String lightDefaultDesc(String lang) =>
@@ -159,6 +159,28 @@ class AppStrings {
       lang == 'en' ? 'Notification alerts $m minutes before data release' : 'Notifikasi berbunyi $m menit sebelum data rilis';
   static String minutesSuffix(String lang, int m) =>
       lang == 'en' ? '$m Minutes' : '$m Menit';
+  static String testNotificationBtn(String lang) =>
+      lang == 'en' ? '🔔 Test Pre-Release Notification' : '🔔 Uji Coba Notifikasi Sekarang';
+  static String testNotificationSent(String lang) =>
+      lang == 'en' ? 'Notification test triggered! Check your notification tray.' : 'Notifikasi uji coba dikirim! Periksa bar notifikasi Anda.';
+  static String notifSoundTitle(String lang) =>
+      lang == 'en' ? 'Notification Sound' : 'Suara Notifikasi';
+  static String notifSoundSubtitle(String lang) =>
+      lang == 'en' ? 'Play sound when calendar alert arrives' : 'Bunyikan nada saat ada sinyal & pengingat';
+  static String notifVibrateTitle(String lang) =>
+      lang == 'en' ? 'Notification Vibration' : 'Getaran Notifikasi';
+  static String notifVibrateSubtitle(String lang) =>
+      lang == 'en' ? 'Vibrate device for upcoming forex events' : 'Getarkan HP saat data ekonomi dirilis';
+  static String notifVolumeTitle(String lang) =>
+      lang == 'en' ? 'Notification Volume' : 'Volume Notifikasi';
+  static String notifImpactSection(String lang) =>
+      lang == 'en' ? 'FILTER NOTIFICATION IMPACT' : 'FILTER DAMPAK NOTIFIKASI';
+  static String notifImpactSubtitle(String lang) =>
+      lang == 'en' ? 'Choose which impact levels trigger notifications' : 'Pilih tingkat dampak berita yang memicu notifikasi';
+  static String notifCurrencySection(String lang) =>
+      lang == 'en' ? 'FILTER NOTIFICATION CURRENCIES' : 'FILTER MATA UANG NOTIFIKASI';
+  static String notifCurrencySubtitle(String lang) =>
+      lang == 'en' ? 'Turn off currency to mute its news alerts' : 'Matikan mata uang tertentu untuk menghentikan notifikasinya';
 
   // Favorite Assets
   static String favoriteSection(String lang) =>
@@ -230,5 +252,11 @@ class AppStrings {
   static String historyTabTitle(String lang) =>
       lang == 'en' ? 'Release History' : 'Riwayat Rilis';
   static String chartSubtitle(String lang) =>
-      lang == 'en' ? 'Previous 6 Periods Trend' : 'Tren Rilis 6 Periode Terdahulu';
+      lang == 'en' ? 'Previous 12 Periods Trend' : 'Tren Rilis 12 Periode Terdahulu';
+  static String traderWarningTitle(String lang) =>
+      lang == 'en' ? '⚠️ RISK WARNING & PRE-ENTRY ANALYSIS' : '⚠️ PERINGATAN RISIKO & WAJIB ANALISA';
+  static String traderWarningBody(String lang) =>
+      lang == 'en'
+          ? 'Fundamental news recommendations are probability models. Traders MUST ALWAYS perform comprehensive technical analysis (Support/Resistance, Price Action, Trend) and enforce strict Risk/Money Management before placing any trade. Never FOMO during news volatility!'
+          : 'Rekomendasi rilis berita merupakan estimasi probabilitas fundamental. Trader WAJIB SELALU menganalisa secara menyeluruh (Support/Resistance, Price Action, Konfirmasi Trend) dan menerapkan Risk & Money Management ketat sebelum melakukan Entry! Jangan pernah FOMO saat berita rilis!';
 }

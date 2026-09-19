@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../models/economic_event.dart';
+import '../services/notification_service.dart';
 import '../providers/app_settings_provider.dart';
 import '../services/app_strings.dart';
 import '../widgets/app_theme.dart';
@@ -81,6 +82,8 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: hasCustomBg
             ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
             : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         title: Text(
           AppStrings.settingsTitle(lang),
@@ -272,6 +275,275 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                 ),
+                const Divider(height: 1),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  activeColor: AppTheme.myfxOrange,
+                  title: Text(
+                    AppStrings.notifSoundTitle(lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  subtitle: Text(
+                    AppStrings.notifSoundSubtitle(lang),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  ),
+                  value: settings.notificationSoundEnabled,
+                  onChanged: (val) {
+                    settings.setNotificationSoundEnabled(val);
+                  },
+                ),
+                const Divider(height: 1),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  activeColor: AppTheme.myfxOrange,
+                  title: Text(
+                    AppStrings.notifVibrateTitle(lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  subtitle: Text(
+                    AppStrings.notifVibrateSubtitle(lang),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  ),
+                  value: settings.notificationVibrationEnabled,
+                  onChanged: (val) {
+                    settings.setNotificationVibrationEnabled(val);
+                  },
+                ),
+                const Divider(height: 1),
+
+                // Volume Notifikasi Slider (bisa diatur pelan/kencang atau dimatikan via sound toggle)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                settings.notificationSoundEnabled
+                                    ? (settings.notificationVolume > 0.5 ? Icons.volume_up_rounded : Icons.volume_down_rounded)
+                                    : Icons.volume_off_rounded,
+                                size: 18,
+                                color: isDark ? Colors.white70 : const Color(0xFF555F6D),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                AppStrings.notifVolumeTitle(lang),
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            settings.notificationSoundEnabled
+                                ? '${(settings.notificationVolume * 100).round()}%'
+                                : (lang == 'en' ? 'Muted' : 'Mati'),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: settings.notificationSoundEnabled ? AppTheme.myfxOrange : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: AppTheme.myfxOrange,
+                          inactiveTrackColor: isDark ? const Color(0xFF2E3542) : const Color(0xFFDDE3EA),
+                          thumbColor: AppTheme.myfxOrange,
+                          overlayColor: AppTheme.myfxOrange.withOpacity(0.2),
+                          trackHeight: 4,
+                        ),
+                        child: Slider(
+                          value: settings.notificationVolume,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 10,
+                          onChanged: settings.notificationSoundEnabled
+                              ? (val) => settings.setNotificationVolume(val)
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                // Filter Dampak Notifikasi (High, Medium, Low)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.notifImpactSection(lang),
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: isDark ? const Color(0xFFB0B7C3) : const Color(0xFF555F6D),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppStrings.notifImpactSubtitle(lang),
+                        style: GoogleFonts.inter(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          _buildFilterChoiceChip(
+                            label: 'High (Tinggi)',
+                            color: const Color(0xFFEF4444),
+                            isSelected: settings.notificationImpactFilter.contains('High'),
+                            onSelected: () => settings.toggleNotificationImpactFilter('High'),
+                            isDark: isDark,
+                          ),
+                          _buildFilterChoiceChip(
+                            label: 'Medium (Sedang)',
+                            color: const Color(0xFFF59E0B),
+                            isSelected: settings.notificationImpactFilter.contains('Medium'),
+                            onSelected: () => settings.toggleNotificationImpactFilter('Medium'),
+                            isDark: isDark,
+                          ),
+                          _buildFilterChoiceChip(
+                            label: 'Low (Rendah)',
+                            color: const Color(0xFF10B981),
+                            isSelected: settings.notificationImpactFilter.contains('Low'),
+                            onSelected: () => settings.toggleNotificationImpactFilter('Low'),
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                // Filter Mata Uang Notifikasi (USD, EUR, GBP, JPY, dll)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.notifCurrencySection(lang),
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: isDark ? const Color(0xFFB0B7C3) : const Color(0xFF555F6D),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppStrings.notifCurrencySubtitle(lang),
+                        style: GoogleFonts.inter(fontSize: 11, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'].map((curr) {
+                          final isSelected = settings.notificationCurrencyFilter.contains(curr);
+                          return FilterChip(
+                            label: Text(
+                              curr,
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: isSelected
+                                    ? Colors.black
+                                    : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                              ),
+                            ),
+                            selected: isSelected,
+                            selectedColor: AppTheme.myfxOrange,
+                            backgroundColor: isDark ? const Color(0xFF1E222A) : const Color(0xFFF1F5F9),
+                            checkmarkColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppTheme.myfxOrange
+                                    : (isDark ? const Color(0xFF333B48) : const Color(0xFFCBD5E1)),
+                              ),
+                            ),
+                            onSelected: (_) => settings.toggleNotificationCurrencyFilter(curr),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.myfxOrange,
+                        side: const BorderSide(color: AppTheme.myfxOrange, width: 1.2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      ),
+                      icon: const Icon(Icons.notifications_active_rounded, size: 18),
+                      label: Text(
+                        AppStrings.testNotificationBtn(lang),
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      onPressed: () async {
+                        final testEvent = EconomicEvent(
+                          title: 'Non-Farm Employment Change',
+                          country: 'USD',
+                          date: DateTime.now().add(Duration(minutes: settings.alertMinutesBefore)),
+                          impact: 'High',
+                          forecast: '180K',
+                          previous: '165K',
+                          actual: '',
+                        );
+                        await NotificationService().schedulePreReleaseReminder(
+                          event: testEvent,
+                          minutesBefore: settings.alertMinutesBefore,
+                          soundEnabled: settings.notificationSoundEnabled,
+                          vibrationEnabled: settings.notificationVibrationEnabled,
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: const Color(0xFF1E222A),
+                              content: Text(
+                                AppStrings.testNotificationSent(lang),
+                                style: const TextStyle(color: Colors.white, fontSize: 13),
+                              ),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -341,6 +613,18 @@ class SettingsScreen extends StatelessWidget {
             isDark: isDark,
             title: AppStrings.glossary5Title(lang),
             desc: AppStrings.glossary5Desc(lang),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'FX Impact • version 1.16.0',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.grey[500] : Colors.grey[600],
+                letterSpacing: 0.3,
+              ),
+            ),
           ),
           const SizedBox(height: 30),
         ],
@@ -524,6 +808,44 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFilterChoiceChip({
+    required String label,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onSelected,
+    required bool isDark,
+  }) {
+    return FilterChip(
+      avatar: Container(
+        width: 9,
+        height: 9,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+      label: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w600,
+          color: isSelected
+              ? (isDark ? Colors.white : const Color(0xFF1A1A1A))
+              : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+        ),
+      ),
+      selected: isSelected,
+      selectedColor: color.withValues(alpha: isDark ? 0.35 : 0.2),
+      backgroundColor: isDark ? const Color(0xFF1E222A) : const Color(0xFFF1F5F9),
+      checkmarkColor: color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isSelected ? color : (isDark ? const Color(0xFF333B48) : const Color(0xFFCBD5E1)),
+          width: isSelected ? 1.2 : 0.8,
+        ),
+      ),
+      onSelected: (_) => onSelected(),
     );
   }
 }

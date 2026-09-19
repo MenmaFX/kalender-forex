@@ -62,6 +62,8 @@ class _EventDetailScreenState extends State<EventDetailScreen>
         backgroundColor: hasCustomBg
             ? (isDark ? const Color(0xB3181B22) : const Color(0xCCFFFFFF))
             : (isDark ? AppTheme.myfxHeaderDark : Colors.white),
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         title: Text(
           '${widget.event.country} - ${widget.event.title}',
@@ -74,29 +76,31 @@ class _EventDetailScreenState extends State<EventDetailScreen>
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined, color: AppTheme.myfxOrange),
-            tooltip: AppStrings.reminderBefore(lang),
-            onPressed: () {
-              calendarProvider.triggerEventReminder(
-                widget.event,
-                settings.alertMinutesBefore,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: const Color(0xFF181B20),
-                  content: Text(
-                    AppStrings.reminderSetNotice(
-                      lang,
-                      settings.alertMinutesBefore,
-                      widget.event.title,
+          // Hanya tampilkan tombol lonceng pengingat jika berita BELUM rilis dan BELUM lewat
+          if (widget.event.actual.isEmpty && widget.event.date.isAfter(DateTime.now()))
+            IconButton(
+              icon: const Icon(Icons.notifications_active_outlined, color: AppTheme.myfxOrange),
+              tooltip: AppStrings.reminderBefore(lang),
+              onPressed: () {
+                calendarProvider.triggerEventReminder(
+                  widget.event,
+                  settings.alertMinutesBefore,
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: const Color(0xFF181B20),
+                    content: Text(
+                      AppStrings.reminderSetNotice(
+                        lang,
+                        settings.alertMinutesBefore,
+                        widget.event.title,
+                      ),
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    style: const TextStyle(color: Colors.white),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -303,6 +307,51 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                       ),
                     ),
                     const SizedBox(height: 10),
+                    // Tampilkan Pasangan Aset Favorit yang Relevan (XAU/USD, BTC/USD, EUR/USD, dll)
+                    if (settings.favoriteAssets.isNotEmpty) ...[
+                      const Divider(height: 18),
+                      Text(
+                        lang == 'en' ? '🎯 Action on Your Favorite Pairs:' : '🎯 Aksi Pasangan Aset Favorit Anda:',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.grey[300] : Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: settings.favoriteAssets.map((asset) {
+                          final isBuy = widget.event.outcomeComparison < 0; // Jika USD lemah -> Emas/BTC/EUR Buy
+                          final actionText = isBuy ? 'BUY' : 'SELL';
+                          final actionColor = isBuy ? const Color(0xFF00E676) : const Color(0xFFFF5252);
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: actionColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: actionColor.withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  asset,
+                                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  actionText,
+                                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w900, color: actionColor),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.myfxOrange,
@@ -311,7 +360,7 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                         textStyle: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w700),
                       ),
                       onPressed: () {
-                        calendarProvider.triggerSignalAlert(widget.event);
+                        calendarProvider.triggerSignalAlert(widget.event, isSimulation: true);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(AppStrings.testSignalNotice(lang))),
                         );
@@ -323,6 +372,46 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                 ),
               ),
             ],
+
+            const SizedBox(height: 12),
+
+            // Peringatan Risiko & Wajib Analisa Sebelum Entry
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0x1AFFB300),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0x66FFB300)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Color(0xFFFFB300), size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        AppStrings.traderWarningTitle(lang),
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFFFB300),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    AppStrings.traderWarningBody(lang),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      height: 1.4,
+                      color: isDark ? const Color(0xFFE2E6EC) : const Color(0xFF2C323B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             const SizedBox(height: 12),
 
@@ -514,48 +603,54 @@ class _EventDetailScreenState extends State<EventDetailScreen>
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: history.reversed.map((item) {
-                final double? numVal = double.tryParse(item.actual.replaceAll(RegExp(r'[^0-9.-]'), ''));
-                final barHeight = ((numVal ?? 2.0).abs() * 30).clamp(25.0, 140.0);
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: history.reversed.map((item) {
+                  final double? numVal = double.tryParse(item.actual.replaceAll(RegExp(r'[^0-9.-]'), ''));
+                  final barHeight = ((numVal ?? 2.0).abs() * 25).clamp(25.0, 130.0);
 
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      item.actual,
-                      style: AppTheme.tabularFigures(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: 22,
-                      height: barHeight,
-                      decoration: BoxDecoration(
-                        color: AppTheme.myfxOrange,
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.myfxOrange.withOpacity(0.35),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          item.actual,
+                          style: AppTheme.tabularFigures(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 20,
+                          height: barHeight,
+                          decoration: BoxDecoration(
+                            color: AppTheme.myfxOrange,
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.myfxOrange.withValues(alpha: 0.35),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          DateFormat('MMM yy', lang == 'en' ? 'en_US' : 'id_ID').format(item.date),
+                          style: GoogleFonts.inter(fontSize: 9.0, color: Colors.grey),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      DateFormat('MMM', lang == 'en' ? 'en_US' : 'id_ID').format(item.date),
-                      style: GoogleFonts.inter(fontSize: 9.5, color: Colors.grey),
-                    ),
-                  ],
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ],
@@ -571,47 +666,43 @@ class _EventDetailScreenState extends State<EventDetailScreen>
       itemBuilder: (context, index) {
         final item = history[index];
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 DateFormat('dd MMM yyyy', lang == 'en' ? 'en_US' : 'id_ID').format(item.date),
                 style: GoogleFonts.inter(
-                  fontSize: 12,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : const Color(0xFF1A1A1A),
                 ),
               ),
               Row(
                 children: [
-                  Text('${AppStrings.actualLabel(lang)} ', style: GoogleFonts.inter(fontSize: 10.5, color: Colors.grey)),
-                  Text(
-                    item.actual,
-                    style: AppTheme.tabularFigures(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : const Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('${AppStrings.forecastLabel(lang)} ', style: GoogleFonts.inter(fontSize: 10.5, color: Colors.grey)),
-                  Text(
-                    item.forecast,
-                    style: AppTheme.tabularFigures(fontSize: 11, color: Colors.grey),
-                  ),
-                  const SizedBox(width: 10),
-                  Text('${AppStrings.previousLabel(lang)} ', style: GoogleFonts.inter(fontSize: 10.5, color: Colors.grey)),
-                  Text(
-                    item.previous,
-                    style: AppTheme.tabularFigures(fontSize: 11, color: Colors.grey),
-                  ),
+                  _buildHistoryMetricBadge('Akt:', item.actual, AppTheme.myfxOrange),
+                  const SizedBox(width: 8),
+                  _buildHistoryMetricBadge('Kons:', item.forecast, Colors.grey[400]!),
+                  const SizedBox(width: 8),
+                  _buildHistoryMetricBadge('Sebl:', item.previous, Colors.grey[500]!),
                 ],
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHistoryMetricBadge(String label, String value, Color valColor) {
+    return RichText(
+      text: TextSpan(
+        style: GoogleFonts.inter(fontSize: 10.5),
+        children: [
+          TextSpan(text: '$label ', style: TextStyle(color: Colors.grey[500])),
+          TextSpan(text: value, style: TextStyle(color: valColor, fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 }

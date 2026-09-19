@@ -15,9 +15,16 @@ class AppSettingsProvider with ChangeNotifier {
   ThemeModeOption _themeModeOption = ThemeModeOption.darkDefault;
   String _language = 'id'; // 'id' atau 'en'
   int _alertMinutesBefore = 15; // 5, 15, 30 menit
+  bool _notificationSoundEnabled = true; // True = suara aktif, False = hening / mute
+  bool _notificationVibrationEnabled = true; // True = getar aktif
+  double _notificationVolume = 0.8; // 0.0 s/d 1.0
   List<String> _favoriteAssets = ['XAU/USD', 'BTC/USD', 'EUR/USD', 'GBP/USD'];
   Set<String> _impactFilter = {'High', 'Medium', 'Low'};
   Set<String> _currencyFilter = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'};
+
+  // Filter Khusus untuk Notifikasi (User bisa pilih/centang Low, Med, High & Mata Uang mana yang memicu notifikasi)
+  Set<String> _notificationImpactFilter = {'High', 'Medium', 'Low'};
+  Set<String> _notificationCurrencyFilter = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'};
 
   // Path file background tersimpan
   String? _portraitWallpaperPath;
@@ -35,9 +42,14 @@ class AppSettingsProvider with ChangeNotifier {
   String? get landscapeWallpaperPath => _landscapeWallpaperPath;
   String get language => _language;
   int get alertMinutesBefore => _alertMinutesBefore;
+  bool get notificationSoundEnabled => _notificationSoundEnabled;
+  bool get notificationVibrationEnabled => _notificationVibrationEnabled;
+  double get notificationVolume => _notificationVolume;
   List<String> get favoriteAssets => _favoriteAssets;
   Set<String> get impactFilter => _impactFilter;
   Set<String> get currencyFilter => _currencyFilter;
+  Set<String> get notificationImpactFilter => _notificationImpactFilter;
+  Set<String> get notificationCurrencyFilter => _notificationCurrencyFilter;
 
   AppSettingsProvider() {
     _loadFromPrefs();
@@ -66,6 +78,9 @@ class AppSettingsProvider with ChangeNotifier {
 
     _language = prefs.getString('language') ?? 'id';
     _alertMinutesBefore = prefs.getInt('alert_minutes_before') ?? 15;
+    _notificationSoundEnabled = prefs.getBool('notif_sound_enabled') ?? true;
+    _notificationVibrationEnabled = prefs.getBool('notif_vibration_enabled') ?? true;
+    _notificationVolume = prefs.getDouble('notif_volume') ?? 0.8;
     final favs = prefs.getStringList('favorite_assets');
     if (favs != null) _favoriteAssets = favs;
     final impacts = prefs.getStringList('impact_filters');
@@ -79,6 +94,20 @@ class AppSettingsProvider with ChangeNotifier {
       _currencyFilter = currs.toSet();
     } else {
       _currencyFilter = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'};
+    }
+
+    final notifImpacts = prefs.getStringList('notif_impact_filters');
+    if (notifImpacts != null && notifImpacts.isNotEmpty) {
+      _notificationImpactFilter = notifImpacts.toSet();
+    } else {
+      _notificationImpactFilter = {'High', 'Medium', 'Low'};
+    }
+
+    final notifCurrs = prefs.getStringList('notif_currency_filters');
+    if (notifCurrs != null && notifCurrs.isNotEmpty) {
+      _notificationCurrencyFilter = notifCurrs.toSet();
+    } else {
+      _notificationCurrencyFilter = {'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD'};
     }
 
     notifyListeners();
@@ -200,6 +229,27 @@ class AppSettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setNotificationSoundEnabled(bool enabled) async {
+    _notificationSoundEnabled = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notif_sound_enabled', enabled);
+    notifyListeners();
+  }
+
+  Future<void> setNotificationVibrationEnabled(bool enabled) async {
+    _notificationVibrationEnabled = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notif_vibration_enabled', enabled);
+    notifyListeners();
+  }
+
+  Future<void> setNotificationVolume(double volume) async {
+    _notificationVolume = volume;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('notif_volume', volume);
+    notifyListeners();
+  }
+
   Future<void> toggleFavoriteAsset(String asset) async {
     if (_favoriteAssets.contains(asset)) {
       _favoriteAssets.remove(asset);
@@ -234,6 +284,32 @@ class AppSettingsProvider with ChangeNotifier {
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('currency_filters', _currencyFilter.toList());
+    notifyListeners();
+  }
+
+  Future<void> toggleNotificationImpactFilter(String impact) async {
+    if (_notificationImpactFilter.contains(impact)) {
+      if (_notificationImpactFilter.length > 1) {
+        _notificationImpactFilter.remove(impact);
+      }
+    } else {
+      _notificationImpactFilter.add(impact);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('notif_impact_filters', _notificationImpactFilter.toList());
+    notifyListeners();
+  }
+
+  Future<void> toggleNotificationCurrencyFilter(String currency) async {
+    if (_notificationCurrencyFilter.contains(currency)) {
+      if (_notificationCurrencyFilter.length > 1) {
+        _notificationCurrencyFilter.remove(currency);
+      }
+    } else {
+      _notificationCurrencyFilter.add(currency);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('notif_currency_filters', _notificationCurrencyFilter.toList());
     notifyListeners();
   }
 }
